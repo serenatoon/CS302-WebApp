@@ -4,11 +4,10 @@ import webbrowser
 import os
 
 def getIP():
-	#try:
-		# internal IP 
-		#return socket.gethostbyname(socket.getfqdn())
-	#except:
-	return "localhost"	
+	try:
+		return socket.gethostbyname(socket.gethostname())
+	except:
+		return "localhost"	
 
 ip = getIP() # socket to listen  
 port = 10032 # TCP port to listen on 
@@ -19,7 +18,6 @@ class main(object):
 		html = open('main.html')
 		page = html.read()
 		return page
-		#return "Hello, world!"
 
 	webbrowser.open_new('http://%s:%d/home' % (ip, port))
 
@@ -40,7 +38,6 @@ def runMain():
 						#'engine.autoreload.on': True,
 						})
 
-	print "starting........"
 
 	cherrypy.engine.start() # start webserver
 
