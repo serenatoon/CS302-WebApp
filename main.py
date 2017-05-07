@@ -3,7 +3,7 @@ import socket
 import webbrowser
 import os
 
-
+# Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
 	try:
 		ip = socket.gethostbyname(socket.getfqdn()) # return fully-qualified domain name
@@ -19,7 +19,7 @@ def getIP():
 	return ip
 
 ip = getIP() # socket to listen  
-port = 10032 # TCP port to listen on 
+port = 10008 # TCP port to listen 
 
 class main(object):
 	@cherrypy.expose
