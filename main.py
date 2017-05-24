@@ -4,6 +4,8 @@ import webbrowser
 import os
 import hashlib
 import urllib2
+import time
+import threading
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
@@ -31,21 +33,20 @@ class MainApp(object):
 		html = open('main.html', 'r')
 		page = html.read()
 		logged_in = False
-		page = self.checkLogin(page)
+		#page = self.checkLogin(page)
 		return page
 
 	@cherrypy.expose
 	def loggedin(self):
 		html = open('loggedin.html', 'r')
 		page = str(html.read())
-		html.close()
-		page = self.checkLogin(page)
+		#html.close()
+		#page = self.checkLogin(page)
 		return page
 
 	@cherrypy.expose
 	def signin(self, username=None, password=None): 
 		hash_pw = hashlib.sha256(str(password+salt)).hexdigest()
-		self.auto_report = True
 		error = self.authoriseLogin(username, hash_pw)
 		if (error == 0):
 			cherrypy.session['username'] = username
@@ -55,30 +56,27 @@ class MainApp(object):
 			self.t.start()
 		else:
 			print "login failed!2"
-			self.auto_report = False
-		raise cherrypy.HTTPRedirect('/loggedin')
+			raise cherrypy.HTTPRedirect('/loggedin')
 
 	@cherrypy.expose
 	def report(self, username, hash_pw, first_login):
 		response = 0
-		while (int(response) == 0 and self.auto_report == True):
-			if (first_login == False):
-				time.sleep(30)
-			if (self.auto_report == True):
-				try:
-					url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
-					url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ip # TODO: DON'T HARDCODE LOCATION
-					url += '&port=' + str(port) + '&enc=0'
-					print "logged in!"
-				except:
-					print "login failed!"
-					raise cherrypy.HTTPRedirect('/home')
-				# Getting the error code from the server
-				response_message = (urllib2.urlopen(url)).read()
-				response = str(response_message)[0]
-				# Display response message from the server
-				print "Server response: " + str(response_message)
-		return 
+		if (int(response) == 0):
+			#time.sleep(30)
+			try:
+				url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
+				url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ip # TODO: DON'T HARDCODE LOCATION
+				url += '&port=' + str(port) + '&enc=0'
+				print "logged in!"
+			except:
+				print "login failed!"
+				raise cherrypy.HTTPRedirect('/home')
+			# Getting the error code from the server
+			response_message = (urllib2.urlopen(url)).read()
+			response = str(response_message)[0]
+			# Display response message from the server
+			print "Server response: " + str(response_message)
+		 
 
 	def authoriseLogin(self, username, hash_pw):
 		return self.report(username, hash_pw, True)
