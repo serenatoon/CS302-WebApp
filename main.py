@@ -2,6 +2,7 @@ import cherrypy
 import socket
 import webbrowser
 import os
+import hashlib
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
@@ -18,19 +19,50 @@ def getIP():
 
 	return ip
 
-ip = getIP() # socket to listen  
+#ip = getIP() # socket to listen  
+ip = "127.0.0.1"
 port = 10008 # TCP port to listen 
+salt = "COMPSYS302-2017"
 
-class main(object):
+class MainApp(object):
 	@cherrypy.expose
 	def home(self):
 		html = open('main.html')
 		page = html.read()
 		return page
 
+	@cherrypy.expose
+	def signin(self): 
+		try:
+			username = cherrypy.session['username']
+		except: 
+			raise cherrypy.HTTPRedirect('/home')
+
+		hash_pw = hashlib.sha256(str(password+salt)).hexdigest()
+		self.auto_report = True
+		error = self.authoriseLogin(username, hash_pw)
+
+	def authoriseLogin(self, username, hash_pw):
+		return self.report(username, hash_pw, True)
+
+	def report(self, username, hash_pw):
+		error = 0
+		while (int(error) == 0):
+			try:
+				url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
+				url += '&password=' + str(hash_pw) + '&ip' + ip
+				url += '&port' + str(port) + '&location' + str(location) + '&enc=0'
+			except:
+				raise cherrypy.HTTPRedirect('/home')
+			# Getting the error code from the server
+			response_message = (urllib2.urlopen(url)).read()
+			response = str(response_message)[0]
+			# Display response message from the server
+			print "Server response: " + str(response_message)
+
 	webbrowser.open_new('http://%s:%d/home' % (ip, port))
 
-def runMain():
+def runMainApp():
 	conf = {
 		'/': {
 		'tools.sessions.on': True, # enable sessions to synchronise activity between users 
@@ -38,7 +70,7 @@ def runMain():
 		}
 	}
 
-	cherrypy.tree.mount(main(), "/", conf)
+	cherrypy.tree.mount(MainApp(), "/", conf)
 
 	cherrypy.config.update({'server.socket_host': ip,
 						'server.socket_port': port,
@@ -52,4 +84,4 @@ def runMain():
 	#cherrypy.engine.stop() # terminate; stop the channel of the bus 
 	cherrypy.server.unsubscribe() # disable built-in HTTP server 
 
-runMain()
+runMainApp()
