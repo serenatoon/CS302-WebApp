@@ -22,8 +22,8 @@ def getIP():
 
 	return ip
 
-ip = getIP() # socket to listen  
-#ip = "127.0.0.1"
+#ip = getIP() # socket to listen  
+ip = "127.0.0.1"
 port = 10008 # TCP port to listen 
 salt = "COMPSYS302-2017"
 
@@ -95,6 +95,33 @@ class MainApp(object):
 			page = self.checkLogin(page)
 
 		return page;
+
+	@cherrypy.expose
+	def getOnlineUsers(self):
+		try: 
+			url = 'http://cs302.pythonanywhere.com/getList?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
+		except: 
+			print "display online users failed"
+
+		response = str((urllib2.urlopen(url)).read())
+		error = int(response[0])
+
+		if (error == 0):
+			page = ''
+			users = response.split()
+			for (i in range (len(users))):
+				if (',' in users[i]):
+					split_users = users[i].split(',')
+				# store online user in database (if it is not this current user)
+				if (split_users[0] != cherrypy.session['username']):
+					user = split_users[0]
+
+	def storeUser(self, user):
+		username = user[0]
+		location = user[1]
+		ip = user[2]
+		port = user[3]
+		login_time = user[4]
 
 	webbrowser.open_new('http://%s:%d/home' % (ip, port))
 
