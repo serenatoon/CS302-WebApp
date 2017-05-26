@@ -3,18 +3,23 @@
 <head>
 <meta charset="utf-8">
 <title>Home</title>
-	<link rel="stylesheet" href="style.css">
+	<link href="/static/style.css" rel="stylesheet"  type="text/css">
 </head>
 
 <body>
+   <div style="margin:300px auto 0 auto;">
+	<div class = "login_page">
+	 <div class = "form"> 
 
+        <form class="login_form" action="/signin" method="post" enctype="multipart/form-data">
+	         <input type="text" name="username" placeholder='Username'/><br/>
+	         <input type="password" name="password" placeholder='Password'/><br>
+	         <button type="submit">LOGIN</button>
+         </form>
 
-	<div style ="width:500px; margin:300px auto 0 auto;">
-        <form action="/signin" method="post" enctype="multipart/form-data">
-         <input type="text" name="username" placeholder='Username'/><br/>
-         <input type="password" name="password" placeholder='Password'/><br>
-         <button type="submit">LOGIN</button></form>
+	 </div>
     </div>
+   </div>
 
 </body>
 </html>

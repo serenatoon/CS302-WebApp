@@ -100,10 +100,19 @@ class MainApp(object):
 
 def runMainApp():
 	conf = {
-		'/': {
-		'tools.sessions.on': True, # enable sessions to synchronise activity between users 
-		'tools.staticdir.root:': os.path.abspath(os.getcwd()) # serve whole dir
-		}
+         '/': {
+             'tools.sessions.on': True,
+             'tools.staticdir.root': os.path.abspath(os.getcwd())
+         },
+         '/generator': {
+             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
+             'tools.response_headers.on': True,
+             'tools.response_headers.headers': [('Content-Type', 'text/plain')],
+         },
+         '/static': {
+             'tools.staticdir.on': True,
+             'tools.staticdir.dir': './static'
+         }
 	}
 
 	cherrypy.tree.mount(MainApp(), "/", conf)
