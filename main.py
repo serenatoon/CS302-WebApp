@@ -27,19 +27,21 @@ ip = getIP() # socket to listen
 port = 10008 # TCP port to listen 
 salt = "COMPSYS302-2017"
 
+
 class MainApp(object):
+	msg = " "
+
 	@cherrypy.expose
-	def home(self):
-		html = open('main.html', 'r')
-		page = html.read()
+	def login(self):
+		page = open('main.html', 'r').read().format(message=self.msg)
+		#page = html.read()
 		logged_in = False
 		#page = self.checkLogin(page)
 		return page
 
 	@cherrypy.expose
-	def loggedin(self):
-		html = open('loggedin.html', 'r')
-		page = str(html.read())
+	def home(self):
+		page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'])
 		#html.close()
 		#page = self.checkLogin(page)
 		return page
@@ -48,15 +50,20 @@ class MainApp(object):
 	def signin(self, username=None, password=None): 
 		hash_pw = hashlib.sha256(str(password+salt)).hexdigest()
 		error = self.authoriseLogin(username, hash_pw)
-		if (error == 0):
+		print error
+		if (int(error) == 0):
 			cherrypy.session['username'] = username
 			cherrypy.session['password'] = hash_pw 
-			self.t = threading.Thread(target=self.report, args=[cherrypy.session['username'], cherrypy.session['password'], Falsae])
+			self.t = threading.Thread(target=self.report, args=[cherrypy.session['username'], cherrypy.session['password'], False])
 			self.daemon = True
 			self.t.start()
+			raise cherrypy.HTTPRedirect('/home')
 		else:
 			print "login failed!2"
-			raise cherrypy.HTTPRedirect('/loggedin')
+			self.msg = "Incorrect credentials, please try again"
+			raise cherrypy.HTTPRedirect('/login')
+
+		
 
 	@cherrypy.expose
 	def report(self, username, hash_pw, first_login):
@@ -70,12 +77,13 @@ class MainApp(object):
 				print "logged in!"
 			except:
 				print "login failed!"
-				raise cherrypy.HTTPRedirect('/home')
+				raise cherrypy.HTTPRedirect('/login')
 			# Getting the error code from the server
 			response_message = (urllib2.urlopen(url)).read()
 			response = str(response_message)[0]
 			# Display response message from the server
 			print "Server response: " + str(response_message)
+			return response
 		 
 
 	def authoriseLogin(self, username, hash_pw):
@@ -96,7 +104,7 @@ class MainApp(object):
 
 		return page;
 
-	webbrowser.open_new('http://%s:%d/home' % (ip, port))
+	webbrowser.open_new('http://%s:%d/login' % (ip, port))
 
 def runMainApp():
 	conf = {

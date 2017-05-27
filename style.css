@@ -26,45 +26,19 @@ body {
 
     b, strong {font-weight:normal;
     color:{color:bold text};}
-}
-
-/* Bordered form */
-/*form {
-    border: 3px solid #f1f1f1;
-    position: absolute;
 
 }
-*/
-/* Full-width inputs */
-/*input[type=text], input[type=password] {
-    width: 500px;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    font-size: 11px;
+
+
+h1 {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    max-width: 400px;
+    margin: 0 auto 100px;
+    padding: 45px;
     text-align: center;
-    letter-spacing: 5px;
-}*/
-
-/* Set a style for all buttons */
-/*button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
-    width: 500px;
-    letter-spacing: 3px;
-    font-size: 14px;
-}*/
-
-/* Add a hover effect for buttons */
-/*button:hover {
-    opacity: 0.8;
-}*/
+}
 
 .login_page {
 	width: 400px;
