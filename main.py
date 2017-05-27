@@ -109,7 +109,7 @@ class MainApp(object):
 		if (error == 0):
 			page = ''
 			users = response.split()
-			for (i in range (len(users))):
+			for i in range (len(users)):
 				if (',' in users[i]):
 					split_users = users[i].split(',')
 				# store online user in database (if it is not this current user)
