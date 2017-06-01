@@ -27,6 +27,7 @@ ext_ip = '122.62.141.222'
 port = 10008 # TCP port to listen 
 salt = "COMPSYS302-2017"
 db_file = 'app.db'
+curs = ''
 
 def connectDatabse(db_file): 
 	try:
@@ -54,6 +55,18 @@ def createOnlineUserTable(db):
 		else:
 			print 'db connection not made!'
 			return False
+
+def formatUserList(response):
+	user_details = response.replace("0, Online user list returned", "")
+
+	user_details = user_details.split() 
+	for i in range (len(user_details)):
+		if (',' in user_details[i]):
+			split_details = user_details[i].split(',')
+			if (split_details[0] != cherrypy.session['username']):
+				print split_details[0]
+				# TODO: put in db 
+
 
 class MainApp(object):
 	msg = " "
@@ -159,6 +172,7 @@ class MainApp(object):
 		if (error == 0):
 			user_list = response
 			page = ''
+			formatUserList(user_list)
 			return user_list
 
 
