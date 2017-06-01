@@ -13,16 +13,15 @@ def getIP():
 		ip = socket.gethostbyname(socket.getfqdn()) # return fully-qualified domain name
 	except:
 		ip = ''
-	if (not ip) or (ip.startswith('127.')): 
-	# linux returns localhost 127.0.0.1, but we need eth0 IP 
-	# sourced from http://stackoverflow.com/questions/24196932/how-can-i-get-the-ip-address-of-eth0-in-python
-		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # create new socket 
-		s.connect(("8.8.8.8", 80)) # open socket to google's DNS server 
-		return s.getsockname()[0] # take address from that connection 
-
+	# if (not ip) or (ip.startswith('127.')):
+	# 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # create new socket 
+ #        s.connect(("8.8.8.8", 80)) # open socket to google's DNS server 
+ #        ip = s.getsockname()[0] # take address from that connection 
+   
 	return ip
 
-ip = getIP() # socket to listen  
+local_ip = getIP() # socket to listen  
+ext_ip = '122.62.141.222'
 #ip = "127.0.0.1"
 port = 10008 # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -72,7 +71,7 @@ class MainApp(object):
 			#time.sleep(30)
 			try:
 				url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
-				url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ip # TODO: DON'T HARDCODE LOCATION
+				url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
 				url += '&port=' + str(port) + '&enc=0'
 				print "logged in!"
 			except:
@@ -132,7 +131,7 @@ class MainApp(object):
 			return user_list
 
 
-	webbrowser.open_new('http://%s:%d/login' % (ip, port))
+	webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
 def runMainApp():
 	conf = {
@@ -153,7 +152,7 @@ def runMainApp():
 
 	cherrypy.tree.mount(MainApp(), "/", conf)
 
-	cherrypy.config.update({'server.socket_host': ip,
+	cherrypy.config.update({'server.socket_host': local_ip,
 						'server.socket_port': port,
 						#'engine.autoreload.on': True,
 						})
