@@ -104,6 +104,19 @@ class MainApp(object):
 
 		return page;
 
+	@cherrypy.expose
+	def signout(self):
+		try:
+			url = 'http://cs302.pythonanywhere.com/logoff?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
+		except: 
+			print 'logout failed'
+		response = (urllib2.urlopen(url)).read()
+		error = str(response)[0]
+		if (int(error) == 0):
+			self.msg = 'Logout successful!'
+			cherrypy.session.clear() # clear user session 
+			raise cherrypy.HTTPRedirect('/login')
+
 	webbrowser.open_new('http://%s:%d/login' % (ip, port))
 
 def runMainApp():
