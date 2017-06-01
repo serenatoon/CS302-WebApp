@@ -6,6 +6,7 @@ import hashlib
 import urllib2
 import time
 import threading
+import sqlite3
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
@@ -25,10 +26,40 @@ ext_ip = '122.62.141.222'
 #ip = "127.0.0.1"
 port = 10008 # TCP port to listen 
 salt = "COMPSYS302-2017"
+db_file = 'app.db'
 
+def connectDatabse(db_file): 
+	try:
+		conn = sqlite3.connect(db_file)
+		print(sqlite3.version)
+	except Error as e:
+		print(e)
+	# finally: 
+	# 	conn.close()
+	return conn
+
+def createTable(conn, create_table_sql):
+	try: 
+		curs = conn.cursor() 
+		curs.execute(create_table_sql)
+	except Error as e:
+		print(e)
+
+def createOnlineUserTable(db): 
+		users_table = """CREATE TABLE IF NOT EXISTS online_users ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);"""
+		if db is not None: 
+			createTable(db, users_table)
+			db.commit() 
+			return True
+		else:
+			print 'db connection not made!'
+			return False
 
 class MainApp(object):
 	msg = " "
+	db = connectDatabse(db_file)
+	db_init = createOnlineUserTable(db)
+
 
 	@cherrypy.expose
 	def login(self):
