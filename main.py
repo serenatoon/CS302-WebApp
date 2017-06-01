@@ -31,7 +31,7 @@ curs = ''
 
 def connectDatabse(db_file): 
 	try:
-		conn = sqlite3.connect(db_file)
+		conn = sqlite3.connect(db_file, check_same_thread=False)
 		print(sqlite3.version)
 	except Error as e:
 		print(e)
@@ -47,30 +47,46 @@ def createTable(conn, create_table_sql):
 		print(e)
 
 def createOnlineUserTable(db): 
-		users_table = """CREATE TABLE IF NOT EXISTS online_users ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);"""
-		if db is not None: 
-			createTable(db, users_table)
-			db.commit() 
-			return True
-		else:
-			print 'db connection not made!'
-			return False
+	users_table = """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);"""
+	if db is not None: 
+		createTable(db, users_table)
+		db.commit() 
+		return True
+	else:
+		print 'db connection not made!'
+		return False
 
-def formatUserList(response):
-	user_details = response.replace("0, Online user list returned", "")
+# def formatUserList(response):
+# 	user_details = response.replace("0, Online user list returned", "")
 
-	user_details = user_details.split() 
-	for i in range (len(user_details)):
-		if (',' in user_details[i]):
-			split_details = user_details[i].split(',')
-			if (split_details[0] != cherrypy.session['username']):
-				print split_details[0]
-				# TODO: put in db 
+# 	user_details = user_details.split() 
+# 	for i in range (len(user_details)):
+# 		if (',' in user_details[i]):
+# 			split_details = user_details[i].split(',')
+# 			if (split_details[0] != cherrypy.session['username']):
+# 				print split_details[0]
+# 				insertUser(split_details, db, cursor)
+# 				# TODO: put in db 
 
+def insertUser(user_details, db, cursor): 
+	username = user_details[0]
+	cursor.execute('''SELECT * FROM user_list WHERE username=?''', (username,))
+	if (cursor.fetchone() == None):
+		location = user_details[1]
+		print location
+		ip = user_details[2]
+		port = user_details[3]
+		login_time = user_details[4]
+		cursor.execute('''INSERT INTO user_list (username, location, ip, port, login_time)
+		VALUES (?, ?, ?, ?, ?)''', (username, location, ip, port, login_time))
+		db.commit() 
 
 class MainApp(object):
 	msg = " "
+	global db 
 	db = connectDatabse(db_file)
+	global cursor 
+	cursor = db.cursor()
 	db_init = createOnlineUserTable(db)
 
 
@@ -172,7 +188,14 @@ class MainApp(object):
 		if (error == 0):
 			user_list = response
 			page = ''
-			formatUserList(user_list)
+			user_details = response.replace("0, Online user list returned", "")
+			user_details = user_details.split() 
+			for i in range (len(user_details)):
+				if (',' in user_details[i]):
+					split_details = user_details[i].split(',')
+					if (split_details[0] != cherrypy.session['username']):
+						print split_details[0]
+						insertUser(split_details, db, cursor)
 			return user_list
 
 
