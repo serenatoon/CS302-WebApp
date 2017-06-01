@@ -40,7 +40,7 @@ class MainApp(object):
 
 	@cherrypy.expose
 	def home(self):
-		page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'])
+		page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList())
 		#html.close()
 		#page = self.checkLogin(page)
 		return page
@@ -115,6 +115,21 @@ class MainApp(object):
 			self.msg = 'Logout successful!'
 			cherrypy.session.clear() # clear user session 
 			raise cherrypy.HTTPRedirect('/login')
+
+	def getList(self): 
+		try: 
+			url = 'http://cs302.pythonanywhere.com/getList?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
+		except: 
+			print 'getList failed!'
+			raise cherrypy.HTTPRedirect('/')
+
+		response = str((urllib2.urlopen(url)).read())
+		error = int(response[0])
+		if (error == 0):
+			user_list = response
+			page = ''
+			return user_list
+
 
 	webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
