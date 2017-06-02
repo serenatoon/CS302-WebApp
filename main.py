@@ -157,7 +157,7 @@ class MainApp(object):
             html.close()
             page = self.checkLogin(page)
 
-        return page;
+        return page
 
     @cherrypy.expose
     def signout(self):
@@ -205,12 +205,26 @@ class MainApp(object):
         decoded_msg = message
         print decoded_msg
         #now = time.strftime("%d-%m-%Y %I:%M %p",time.localtime(float(time.mktime(time.localtime()))))
-        #print now
+        #print nows
         cursor.execute('''INSERT INTO messages (sender, recepient, message, stamp)
         VALUES (?, ?, ?, ?)''', (sender, destination, decoded_msg, stamp))
-        db.commit() 
+        db.commit()
+        return '1'
 
+    @cherrypy.expose 
+    def sendMessage(self, recepient, message):
+        current_time = time.strftime("%d-%m-%Y %I:%M %p", time.localtime(float(time.mktime(time.localtime()))))
+        curs = db.execute("""SELECT username, ip from user_list""")
+        for row in curs: 
+            print row [1]
+            if username is row[1]:
+                recepient_ip = row[3]
+                recepient_port = row[4]
 
+         url = recepient_ip + ':' + str(recepient_port) + str(username)
+         url += '/' + 'receiveMessage?sender=' + cherrypy.session['userame']
+
+ 
     webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
 def runMainApp():
