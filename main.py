@@ -7,13 +7,14 @@ import urllib2
 import time
 import threading
 import sqlite3
+import json
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
     try:
         ip = socket.gethostbyname(socket.getfqdn())  # return fully-qualified domain name
     except:
-        ip = ''
+        ip = socket.gethostbyname(socket.gethostname())
     # if (not ip) or (ip.startswith('127.')):
     #   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # create new socket 
  #        s.connect(("8.8.8.8", 80)) # open socket to google's DNS server 
@@ -23,7 +24,7 @@ def getIP():
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = '122.62.141.222'
+ext_ip = getIP()
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -42,23 +43,13 @@ def connectDatabse(db_file):
     return conn
 
 
-def createTable(conn, create_table_sql):
+def createTable(db, create_table_sql):
     try:
-        curs = conn.cursor() 
+        curs = db.cursor() 
         curs.execute(create_table_sql)
+        db.commit() 
     except Error as e:
         print(e)
-
-
-def createOnlineUserTable(db):
-    users_table = """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);"""
-    if db is not None:
-        createTable(db, users_table)
-        db.commit()
-        return True
-    else:
-        print 'db connection not made!'
-        return False
 
 # def formatUserList(response):
 #   user_details = response.replace("0, Online user list returned", "")
@@ -79,6 +70,7 @@ def insertUser(user_details, db, cursor):
     if (cursor.fetchone() is None):
         location = user_details[1]
         ip = user_details[2]
+        print ip
         port = user_details[3]
         login_time = user_details[4]
         cursor.execute('''INSERT INTO user_list (username, location, ip, port, login_time)
@@ -91,7 +83,8 @@ class MainApp(object):
     db = connectDatabse(db_file)
     global cursor 
     cursor = db.cursor()
-    db_init = createOnlineUserTable(db)
+    createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);""")
+    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recepient TEXT, message TEXT, stamp INTEGER);""")
 
 
     @cherrypy.expose
@@ -134,7 +127,7 @@ class MainApp(object):
             #time.sleep(30)
             try:
                 url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
-                url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
+                url += '&password=' + str(hash_pw)  + '&location=' + '1' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
                 url += '&port=' + str(port) + '&enc=0'
                 print "logged in!"
             except:
@@ -201,6 +194,21 @@ class MainApp(object):
                         usernames.append(split_details[0])
                         insertUser(split_details, db, cursor)
             return ", ".join(usernames)
+
+    @cherrypy.expose
+    def ping(sender):
+        print 'SOMEONE PINGED YOU!!!!!'
+        return 0
+
+    @cherrypy.expose 
+    def receiveMessage(self, sender, destination, message, stamp, markdown=0, enc=0, hashing=0, hash=None, decryption_key=None):
+        decoded_msg = message
+        print decoded_msg
+        #now = time.strftime("%d-%m-%Y %I:%M %p",time.localtime(float(time.mktime(time.localtime()))))
+        #print now
+        cursor.execute('''INSERT INTO messages (sender, recepient, message, stamp)
+        VALUES (?, ?, ?, ?)''', (sender, destination, decoded_msg, stamp))
+        db.commit() 
 
 
     webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
