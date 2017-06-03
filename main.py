@@ -3,6 +3,7 @@ import socket
 import webbrowser
 import os
 import hashlib
+import urllib
 import urllib2
 import time
 import threading
@@ -97,7 +98,11 @@ class MainApp(object):
 
     @cherrypy.expose
     def home(self):
-        page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList())
+        try:
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList())
+        except KeyError:
+            msg = "Session expired"
+            raise cherrypy.HTTPRedirect('/')
         #html.close()
         #page = self.checkLogin(page)
         return page
@@ -129,7 +134,7 @@ class MainApp(object):
                 url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
                 url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
                 url += '&port=' + str(port) + '&enc=0'
-                print "logged in!"
+                print "logged in! " 
             except:
                 print "login failed!"
                 raise cherrypy.HTTPRedirect('/')
@@ -138,6 +143,8 @@ class MainApp(object):
             response = str(response_message)[0]
             # Display response message from the server
             print "Server response: " + str(response_message)
+            if (response == 0):
+                print cherrypy.session['username']
             return response
          
 
@@ -213,16 +220,38 @@ class MainApp(object):
 
     @cherrypy.expose 
     def sendMessage(self, recepient, message):
-        current_time = time.strftime("%d-%m-%Y %I:%M %p", time.localtime(float(time.mktime(time.localtime()))))
-        curs = db.execute("""SELECT username, ip from user_list""")
+        print recepient
+        current_time = time.time()
+        curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
         for row in curs: 
-            print row [1]
-            if username is row[1]:
+            #print row[1]
+            if (recepient == row[1]):
                 recepient_ip = row[3]
+                #print recepient_ip
                 recepient_port = row[4]
+                #print recepient_port
 
-         url = recepient_ip + ':' + str(recepient_port) + str(username)
-         url += '/' + 'receiveMessage?sender=' + cherrypy.session['userame']
+                # url = 'http://' + str(recepient_ip) + ':' + str(recepient_port)
+                # url += '/' + 'receiveMessage?sender=' + cherrypy.session['username']
+                # url += '&destination=' + str(recepient) + '&message=' + json_msg
+                # url += '&stamp=' + str(int(current_time))
+                post_data = {"sender": cherrypy.session['username'], "destination": recepient, "message": message, "stamp": int(current_time)}
+                url = 'http://' + str(recepient_ip) + ":" + str(recepient_port) + '/receiveMessage?'
+                print url
+                print urllib.urlencode(post_data)
+                fptr = urllib2.urlopen(url, urllib.urlencode(post_data))
+                fptr.read()
+                fptr.close()
+
+                
+
+                # success = (urllib2.urlopen(url)).read()
+                # if (success == 1): 
+                #     print 'message sent!'
+                # else: 
+                #     print 'message failed to send :-('
+                # break
+        cherrypy.HTTPRedirect('/home')
 
  
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
