@@ -238,10 +238,9 @@ class MainApp(object):
                 post_data = {"sender": cherrypy.session['username'], "destination": recepient, "message": message, "stamp": int(current_time)}
                 url = 'http://' + str(recepient_ip) + ":" + str(recepient_port) + '/receiveMessage?'
                 print url
-                print urllib.urlencode(post_data)
-                fptr = urllib2.urlopen(url, urllib.urlencode(post_data))
-                fptr.read()
-                fptr.close()
+                req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
+                response = urllib2.urlopen(req)
+                print response
 
                 
 
