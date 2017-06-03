@@ -232,7 +232,7 @@ def runMainApp():
 
     cherrypy.tree.mount(MainApp(), "/", conf)
 
-    cherrypy.config.update({'server.socket_host': local_ip,
+    cherrypy.config.update({'server.socket_host': '0.0.0.0',
                         'server.socket_port': port,
                         #'engine.autoreload.on': True,
                         })
@@ -242,6 +242,6 @@ def runMainApp():
 
     cherrypy.engine.block() # stop doing anything else 
     #cherrypy.engine.stop() # terminate; stop the channel of the bus 
-    cherrypy.server.unsubscribe() # disable built-in HTTP server 
+    #cherrypy.server.unsubscribe() # disable built-in HTTP server 
 
 runMainApp()
