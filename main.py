@@ -24,7 +24,7 @@ def getIP():
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = getIP()
+ext_ip = '122.62.141.222'
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -88,7 +88,7 @@ class MainApp(object):
 
 
     @cherrypy.expose
-    def login(self):
+    def index(self):
         page = open('main.html', 'r').read().format(message=self.msg)
         #page = html.read()
         logged_in = False
@@ -117,7 +117,7 @@ class MainApp(object):
         else:
             print "login failed!2"
             self.msg = "Incorrect credentials, please try again"
-            raise cherrypy.HTTPRedirect('/login')
+            raise cherrypy.HTTPRedirect('/')
 
        
     @cherrypy.expose
@@ -127,12 +127,12 @@ class MainApp(object):
             #time.sleep(30)
             try:
                 url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
-                url += '&password=' + str(hash_pw)  + '&location=' + '1' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
+                url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
                 url += '&port=' + str(port) + '&enc=0'
                 print "logged in!"
             except:
                 print "login failed!"
-                raise cherrypy.HTTPRedirect('/login')
+                raise cherrypy.HTTPRedirect('/')
             # Getting the error code from the server
             response_message = (urllib2.urlopen(url)).read()
             response = str(response_message)[0]
@@ -170,7 +170,7 @@ class MainApp(object):
         if (int(error) == 0):
             self.msg = 'Logout successful!'
             cherrypy.session.clear() # clear user session 
-            raise cherrypy.HTTPRedirect('/login')
+            raise cherrypy.HTTPRedirect('/')
 
     def getList(self): 
         try: 
@@ -225,7 +225,7 @@ class MainApp(object):
          url += '/' + 'receiveMessage?sender=' + cherrypy.session['userame']
 
  
-    webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
+    #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
 def runMainApp():
     conf = {
@@ -246,7 +246,7 @@ def runMainApp():
 
     cherrypy.tree.mount(MainApp(), "/", conf)
 
-    cherrypy.config.update({'server.socket_host': local_ip,
+    cherrypy.config.update({'server.socket_host': '0.0.0.0',
                         'server.socket_port': port,
                         #'engine.autoreload.on': True,
                         })
@@ -256,6 +256,6 @@ def runMainApp():
 
     cherrypy.engine.block() # stop doing anything else 
     #cherrypy.engine.stop() # terminate; stop the channel of the bus 
-    cherrypy.server.unsubscribe() # disable built-in HTTP server 
+    #cherrypy.server.unsubscribe() # disable built-in HTTP server 
 
 runMainApp()
