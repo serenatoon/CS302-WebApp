@@ -3,6 +3,7 @@ import socket
 import webbrowser
 import os
 import hashlib
+import urllib
 import urllib2
 import time
 import threading
@@ -79,6 +80,8 @@ def insertUser(user_details, db, cursor):
 
 class MainApp(object):
     msg = " "
+    chat_error = ""
+
     global db 
     db = connectDatabse(db_file)
     global cursor 
@@ -97,7 +100,11 @@ class MainApp(object):
 
     @cherrypy.expose
     def home(self):
-        page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList())
+        try:
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error)
+        except KeyError:
+            self.msg = "Session expired, please login again"
+            raise cherrypy.HTTPRedirect('/')
         #html.close()
         #page = self.checkLogin(page)
         return page
@@ -129,8 +136,9 @@ class MainApp(object):
                 url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
                 url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
                 url += '&port=' + str(port) + '&enc=0'
-                print "logged in!"
+                print "logged in as" + username
             except:
+                self.msg = 'Login failed!'
                 print "login failed!"
                 raise cherrypy.HTTPRedirect('/')
             # Getting the error code from the server
@@ -157,7 +165,7 @@ class MainApp(object):
             html.close()
             page = self.checkLogin(page)
 
-        return page;
+        return page
 
     @cherrypy.expose
     def signout(self):
@@ -200,17 +208,63 @@ class MainApp(object):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def receiveMessage(self):
+        try:
+            data = cherrypy.request.json
+            print data
+            print data['message']
+            #now = time.strftime("%d-%m-%Y %I:%M %p",time.localtime(float(time.mktime(time.localtime()))))
+            #print nows
+            cursor.execute('''INSERT INTO messages (sender, recepient, message, stamp)
+            VALUES (?, ?, ?, ?)''', (data['sender'], data['destination'], data['message'], data['stamp']))
+            db.commit()
+            self.chat_error = 'Someone sent you a message!: ' + data['message']
+            print self.chat_error
+            return '1'
+        except: 
+            self.chat_error = 'Could not receive message!'
+            print self.chat_error
+            return '0'
+        #print self.chat_error
+
     @cherrypy.expose 
-    def receiveMessage(self, sender, destination, message, stamp, markdown=0, enc=0, hashing=0, hash=None, decryption_key=None):
-        decoded_msg = message
-        print decoded_msg
-        #now = time.strftime("%d-%m-%Y %I:%M %p",time.localtime(float(time.mktime(time.localtime()))))
-        #print now
-        cursor.execute('''INSERT INTO messages (sender, recepient, message, stamp)
-        VALUES (?, ?, ?, ?)''', (sender, destination, decoded_msg, stamp))
-        db.commit() 
+    def sendMessage(self, recepient, message):
+        print recepient
+        current_time = time.time()
+        curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
+        for row in curs: 
+            #print row[1]
+            if (recepient == row[1]):
+                recepient_ip = row[3]
+                #print recepient_ip
+                recepient_port = row[4]
+                #print recepient_port
 
+                # url = 'http://' + str(recepient_ip) + ':' + str(recepient_port)
+                # url += '/' + 'receiveMessage?sender=' + cherrypy.session['username']
+                # url += '&destination=' + str(recepient) + '&message=' + json_msg
+                # url += '&stamp=' + str(int(current_time))
+                post_data = {"sender": cherrypy.session['username'], "destination": recepient, "message": message, "stamp": int(current_time)}
+                post_data = json.dumps(post_data)
+                url = 'http://' + str(recepient_ip) + ":" + str(recepient_port) + '/receiveMessage?'
+                print url
+                req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
+                response = urllib2.urlopen(req)
+                print response
 
+                
+
+                # success = (urllib2.urlopen(url)).read()
+                # if (success == 1): 
+                #     print 'message sent!'
+                # else: 
+                #     print 'message failed to send :-('
+                # break
+        cherrypy.HTTPRedirect('/home')
+
+ 
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
 def runMainApp():
