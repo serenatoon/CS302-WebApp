@@ -9,6 +9,7 @@ import time
 import threading
 import sqlite3
 import json
+import datetime
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
@@ -102,6 +103,7 @@ class MainApp(object):
     msg = " "
     chat_error = ""
     chat = ""
+    conversation = ""
 
     global db
     db = connectDatabse(db_file)
@@ -110,7 +112,7 @@ class MainApp(object):
     # Make user list db 
     createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);""")
     # Make messages db 
-    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recepient TEXT, message TEXT, stamp INTEGER);""")
+    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER);""")
     # Make profiles db 
     createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
 
@@ -126,7 +128,7 @@ class MainApp(object):
     @cherrypy.expose
     def home(self):
         try:
-            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat)
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation)
         except KeyError:
             self.msg = "Session expired, please login again"
             raise cherrypy.HTTPRedirect('/')
@@ -234,7 +236,7 @@ class MainApp(object):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
 
-    def updateChat(self, sender, recepient, message, timestamp=0):
+    def updateChat(self, sender, recipient, message, timestamp=0):
         chat = sender + ': ' + message
         page = self.home()
         page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
@@ -249,7 +251,7 @@ class MainApp(object):
             print data['message']
             #now = time.strftime("%d-%m-%Y %I:%M %p",time.localtime(float(time.mktime(time.localtime()))))
             #print nows
-            cursor.execute('''INSERT INTO messages (sender, recepient, message, stamp)
+            cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
             VALUES (?, ?, ?, ?)''', (data['sender'], data['destination'], data['message'], data['stamp']))
             db.commit()
             self.chat_error = 'Someone sent you a message!: ' + data['message']
@@ -266,25 +268,25 @@ class MainApp(object):
         #print self.chat_error
 
     @cherrypy.expose 
-    def sendMessage(self, recepient, message):
-        print recepient
+    def sendMessage(self, recipient, message):
+        print recipient
         current_time = time.time()
         curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
         for row in curs: 
             #print row[1]
-            if (recepient == row[1]):
-                recepient_ip = row[3]
-                #print recepient_ip
-                recepient_port = row[4]
-                #print recepient_port
+            if (recipient == row[1]):
+                recipient_ip = row[3]
+                #print recipient_ip
+                recipient_port = row[4]
+                #print recipient_port
 
-                # url = 'http://' + str(recepient_ip) + ':' + str(recepient_port)
+                # url = 'http://' + str(recipient_ip) + ':' + str(recipient_port)
                 # url += '/' + 'receiveMessage?sender=' + cherrypy.session['username']
-                # url += '&destination=' + str(recepient) + '&message=' + json_msg
+                # url += '&destination=' + str(recipient) + '&message=' + json_msg
                 # url += '&stamp=' + str(int(current_time))
-                post_data = {"sender": cherrypy.session['username'], "destination": recepient, "message": message, "stamp": int(current_time)}
+                post_data = {"sender": cherrypy.session['username'], "destination": recipient, "message": message, "stamp": int(current_time)}
                 post_data = json.dumps(post_data)
-                url = 'http://' + str(recepient_ip) + ":" + str(recepient_port) + '/receiveMessage?'
+                url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveMessage?'
                 print url
                 req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
                 response = urllib2.urlopen(req)
@@ -292,6 +294,9 @@ class MainApp(object):
 
                 self.chat += '<div style="text-align:right">'
                 self.chat += 'You: ' + message + '<br></div>'
+                cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
+                VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
+                db.commit()
                 # page = self.home()
                 # page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
                 #return page
@@ -306,6 +311,22 @@ class MainApp(object):
                 #     print 'message failed to send :-('
                 # break
         cherrypy.HTTPRedirect('/home')
+
+    @cherrypy.expose
+    def viewConversation(self, username):
+        curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
+        for row in curs: 
+            if (username == row[1]):
+                self.conversation += '<div style="text-align:left">'
+                self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
+                self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+            elif (username == row[2]):
+                self.conversation += '<div style="text-align:right">'
+                self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
+                self.conversation += 'You: ' + row[3] + '<br></div>'
+        raise cherrypy.HTTPRedirect('/home')
+
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
