@@ -76,7 +76,27 @@ def insertUser(user_details, db, cursor):
         login_time = user_details[4]
         cursor.execute('''INSERT INTO user_list (username, location, ip, port, login_time)
         VALUES (?, ?, ?, ?, ?)''', (username, location, ip, port, login_time))
+        db.commit()
+
+def initProfile(user_details, db, cursor):
+    username = user_details[0]
+    cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+    if (cursor.fetchone() is None):
+        location = user_details[1]
+        if (location == '0'):
+            location_str = 'Lab'
+        elif (location == '1'): 
+            location_str = 'UoA Wifi'
+        elif (location == '2'): 
+            location_str = 'Outside world'
+        else: 
+            location_str = '???'
+        cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
+        VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
         db.commit() 
+    else:
+        print 'User already has a profile!'
+
 
 class MainApp(object):
     msg = " "
@@ -87,8 +107,12 @@ class MainApp(object):
     db = connectDatabse(db_file)
     global cursor 
     cursor = db.cursor()
+    # Make user list db 
     createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);""")
+    # Make messages db 
     createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recepient TEXT, message TEXT, stamp INTEGER);""")
+    # Make profiles db 
+    createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
 
 
     @cherrypy.expose
@@ -102,7 +126,7 @@ class MainApp(object):
     @cherrypy.expose
     def home(self):
         try:
-            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error)
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat)
         except KeyError:
             self.msg = "Session expired, please login again"
             raise cherrypy.HTTPRedirect('/')
@@ -137,7 +161,7 @@ class MainApp(object):
                 url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
                 url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
                 url += '&port=' + str(port) + '&enc=0'
-                print "logged in as" + username
+                print "logged in as " + username
             except:
                 self.msg = 'Login failed!'
                 print "login failed!"
@@ -202,12 +226,20 @@ class MainApp(object):
                     if (split_details[0] != cherrypy.session['username']):
                         usernames.append(split_details[0])
                         insertUser(split_details, db, cursor)
+                        initProfile(split_details, db, cursor)
             return ", ".join(usernames)
 
     @cherrypy.expose
     def ping(sender):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
+
+    def updateChat(self, sender, recepient, message, timestamp=0):
+        chat = sender + ': ' + message
+        page = self.home()
+        page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
+        return page
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -223,11 +255,14 @@ class MainApp(object):
             db.commit()
             self.chat_error = 'Someone sent you a message!: ' + data['message']
             print self.chat_error
-            return '1'
-        except: 
-            self.chat_error = 'Could not receive message!'
-            print self.chat_error
-            return '0'
+            self.chat += '<div style="text-align:left">'
+            self.chat += data['sender'] + ': ' + data['message'] + '<br></div>'
+            return 0
+        except:
+            return 5
+        #     self.chat_error = 'Could not receive message!'
+        #     print self.chat_error
+        #     return '0'
         #print self.chat_error
 
     @cherrypy.expose 
@@ -253,12 +288,13 @@ class MainApp(object):
                 print url
                 req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
                 response = urllib2.urlopen(req)
-                print response
+                #print 'sending message.....' + response
 
-                chat_msg = cherrypy.session['username'] + ': ' + message
-                page = self.home()
-                page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat_msg + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
-                return page
+                self.chat += '<div style="text-align:right">'
+                self.chat += 'You: ' + message + '<br></div>'
+                # page = self.home()
+                # page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
+                #return page
 
 
                 
@@ -271,7 +307,19 @@ class MainApp(object):
                 # break
         cherrypy.HTTPRedirect('/home')
 
- 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def getProfile(self):
+        data = cherrypy.request.json
+        user = data['profile_username']
+        print 'getProfile requesting ' + user
+        curs = db.execute('''SELECT * FROM profiles WHERE username=?''', (user,))
+        profile_data = curs.fetchone()
+        print profile_data   
+        return profile_data    
+
+
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
 def runMainApp():
