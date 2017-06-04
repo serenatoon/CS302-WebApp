@@ -19,7 +19,7 @@
 		 <input class="logout" type="submit" value="Sign out"/>
 		</form></center>
 
-		<div class = "form"> 
+<!-- 		<div class = "form"> 
 
        <form accept-charset="utf-8" action="/sendMessage" method="post" enctype="multipart/form-data">
         <input type="text" size="100" name="message"/><br/>
@@ -27,8 +27,17 @@
         <input type="submit" value="Send"/></form>
          </form><br><br>
          {chat_error:}
-	 </div>
+	 </div> -->
 
+	 <div class = "chat">
+	  {chat_error:}
+   <!-- CHAT_MESSAGES_PYTHON_VAR -->
+ 	  <form accept-charset="utf-8" action="/sendMessage" method="post" enctype="multipart/form-data">
+ 	   Message: <input type="text" size="100" name="message"/><br/>
+     Recepient: <input type="text" size="20" name="recepient"/>
+ 	   <input type="submit" value="Send"/>
+ 	  </form>
+   </div>
 
 
 

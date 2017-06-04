@@ -81,8 +81,9 @@ def insertUser(user_details, db, cursor):
 class MainApp(object):
     msg = " "
     chat_error = ""
+    chat = ""
 
-    global db 
+    global db
     db = connectDatabse(db_file)
     global cursor 
     cursor = db.cursor()
@@ -94,7 +95,7 @@ class MainApp(object):
     def index(self):
         page = open('main.html', 'r').read().format(message=self.msg)
         #page = html.read()
-        logged_in = False
+        #logged_in = False
         #page = self.checkLogin(page)
         return page
 
@@ -253,6 +254,12 @@ class MainApp(object):
                 req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
                 response = urllib2.urlopen(req)
                 print response
+
+                chat_msg = cherrypy.session['username'] + ': ' + message
+                page = self.home()
+                page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat_msg + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
+                return page
+
 
                 
 

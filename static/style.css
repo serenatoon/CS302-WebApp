@@ -1,19 +1,19 @@
 @charset "utf-8";
 @import url(https://fonts.googleapis.com/css?family=Roboto:300);
 * {
-	margin: 0;
-	padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-	text-align:justify;
+    text-align:justify;
     word-wrap:break-word;
     font-family:'Open Sans', sans-serif;
     letter-spacing:1px;
     font-size:12px;
     background-color: #fff;
     color: #666;
-	}
+    }
 
     a {text-decoration:none;
     color:#555;
@@ -80,62 +80,87 @@ body {
 
 
 .login_page {
-	width: 400px;
-	padding: 8%, 0 0;
-	margin: auto;
+    width: 400px;
+    padding: 8%, 0 0;
+    margin: auto;
 }
 
-.form {
-	position: relative;
-	z-index: 1;
-	background: #fff;
-	max-width: 400px;
-	margin: 0 auto 100px;
-	padding: 45px;
-	text-align: center;
+.login_form {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    max-width: 400px;
+    margin: 0 auto 100px;
+    padding: 45px;
+    text-align: center;
     border: 1px solid #eee;
 }
 
-.form input {
-	font-family: "roboto", sans-serif;
-	outline: 0;
-	background: #fff;
-	width: 100%;
-	border: 1px solid #f1f1f1;
-	margin: 0 0 15px;
-	padding: 15px;
-	box-sizing: border-box;
-	font-size: 13px;
-	letter-spacing: 2px;
-	text-transform: lowercase;
+.login_form input {
+    font-family: "roboto", sans-serif;
+    outline: 0;
+    background: #fff;
+    width: 100%;
+    border: 1px solid #f1f1f1;
+    margin: 0 0 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: lowercase;
 }
-.form input:focus {
-	background: #fffef7;
-	-webkit-transition:all 0.4s ease-in-out;
+.login_form input:focus {
+    background: #fffef7;
+    -webkit-transition:all 0.4s ease-in-out;
     -moz-transition:all 0.4s ease-in-out;
     -o-transition:all 0.4s ease-in-out;
     transition:all 0.4s ease-in-out;
 }
 
-.form button {
-	font-family: "roboto", sans-serif;
-	outline: 0;
-	background: #8cdd00;
-	width: 100%;
-	border: 0;
-	padding: 15px;
-	color: #fff;
-	font-size: 15px;
-	-webkit-transition: all 0.3 ease;
-	cursor: pointer;
-	letter-spacing: 2px;
+.login_form button {
+    font-family: "roboto", sans-serif;
+    outline: 0;
+    background: #8cdd00;
+    width: 100%;
+    border: 0;
+    padding: 15px;
+    color: #fff;
+    font-size: 15px;
+    -webkit-transition: all 0.3 ease;
+    cursor: pointer;
+    letter-spacing: 2px;
 }
 
-.form button:hover, .form button:active, .form button:focus {
-	opacity: 0.8;
-	-webkit-transition:all 0.4s ease-in-out;
+.login_form button:hover, .form button:active, .form button:focus {
+    opacity: 0.8;
+    -webkit-transition:all 0.4s ease-in-out;
     -moz-transition:all 0.4s ease-in-out;
     -o-transition:all 0.4s ease-in-out;
     transition:all 0.4s ease-in-out;
+}
+
+
+
+.chat {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    max-width: 400px;
+    margin: 0 auto 100px;
+    padding: 45px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+.chat input {
+    font-family: "roboto", sans-serif;
+    outline: 0;
+    background: #fff;
+    width: 100%;
+    border: 1px solid #f1f1f1;
+    margin: 0 0 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 13px;
+    letter-spacing: 2px;
 }
 
