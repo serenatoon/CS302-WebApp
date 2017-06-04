@@ -325,13 +325,31 @@ class MainApp(object):
         else:
             username = user
 
-        profile_data = self.getProfile(user=cherrypy.session['username'])
+        profile_data = self.getProfile(user=username)
         page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
         return page
         # except KeyError:
         #     self.msg = 'Session expired, please login again'
         #     raise cherrypy.HTTPRedirect('/')
 
+    @cherrypy.expose
+    def editProfile(self, parameter, changes, user=None):
+        if user is None:
+            username = cherrypy.session['username']
+        else:
+            username = user
+
+        if (parameter == 'Full name'):
+            curs.execute('''UPDATE profiles SET fullname=? WHERE user=?''', (changes, username,))
+        elif (parameter == 'Position'):
+            curs.execute('''UPDATE profiles SET position=? WHERE user=?''', (changes, username,))
+        elif (parameter == 'Description'):
+            curs.execute('''UPDATE profiles SET description=? WHERE user=?''', (changes, username,))
+        elif (parameter == 'Location'):
+            curs.execute('''UPDATE profiles SET location=? WHERE user=?''', (changes, username,))
+
+        db.commit()
+        raise cherrypy.HTTPRedirect('/viewProfile')
 
 
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
