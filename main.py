@@ -240,7 +240,6 @@ class MainApp(object):
         page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
         return page
 
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveMessage(self):
@@ -257,9 +256,10 @@ class MainApp(object):
             print self.chat_error
             self.chat += '<div style="text-align:left">'
             self.chat += data['sender'] + ': ' + data['message'] + '<br></div>'
-            return 0
+            return '0'
         except:
-            return 5
+            return '5'
+            print 'could not receive message!'
         #     self.chat_error = 'Could not receive message!'
         #     print self.chat_error
         #     return '0'
