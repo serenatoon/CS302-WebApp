@@ -98,7 +98,6 @@ def initProfile(user_details, db, cursor):
     else:
         print 'User already has a profile!'
 
-
 class MainApp(object):
     msg = " "
     chat_error = ""
@@ -236,12 +235,6 @@ class MainApp(object):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
 
-    def updateChat(self, sender, recipient, message, timestamp=0):
-        chat = sender + ': ' + message
-        page = self.home()
-        page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
-        return page
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveMessage(self):
@@ -308,19 +301,37 @@ class MainApp(object):
                 self.conversation += 'You: ' + row[3] + '<br></div>'
         raise cherrypy.HTTPRedirect('/home')
 
-
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
-    def getProfile(self):
-        data = cherrypy.request.json
-        user = data['profile_username']
-        print 'getProfile requesting ' + user
-        curs = db.execute('''SELECT * FROM profiles WHERE username=?''', (user,))
+    def getProfile(self, user=None):
+        if user is None:
+            data = cherrypy.request.json
+            username = data['profile_username']
+        else:
+            username = user
+
+        print 'getProfile requesting ' + username
+        curs = db.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
         profile_data = curs.fetchone()
-        print profile_data   
-        return profile_data    
+        print profile_data  
+        return profile_data
+
+    @cherrypy.expose
+    def viewProfile(self, user=None):
+        # try:
+        if user is None:
+            username = cherrypy.session['username']
+        else:
+            username = user
+
+        profile_data = self.getProfile(user=cherrypy.session['username'])
+        page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
+        return page
+        # except KeyError:
+        #     self.msg = 'Session expired, please login again'
+        #     raise cherrypy.HTTPRedirect('/')
+
 
 
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
