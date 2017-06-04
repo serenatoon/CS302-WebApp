@@ -245,12 +245,11 @@ class MainApp(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveMessage(self):
-        try:
-            data = cherrypy.request.json
-            print data
-            print data['message']
-            #now = time.strftime("%d-%m-%Y %I:%M %p",time.localtime(float(time.mktime(time.localtime()))))
-            #print nows
+        # try:
+        data = cherrypy.request.json
+        print data
+        print data['message']
+        if (data['destination'] == cherrypy.session['username']):
             cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
             VALUES (?, ?, ?, ?)''', (data['sender'], data['destination'], data['message'], data['stamp']))
             db.commit()
@@ -259,8 +258,9 @@ class MainApp(object):
             self.chat += '<div style="text-align:left">'
             self.chat += data['sender'] + ': ' + data['message'] + '<br></div>'
             return '0'
-        except:
-            return '5'
+        else:
+        # except:
+            return '6'
             print 'could not receive message!'
         #     self.chat_error = 'Could not receive message!'
         #     print self.chat_error
@@ -273,43 +273,25 @@ class MainApp(object):
         current_time = time.time()
         curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
         for row in curs: 
-            #print row[1]
             if (recipient == row[1]):
                 recipient_ip = row[3]
-                #print recipient_ip
                 recipient_port = row[4]
-                #print recipient_port
 
-                # url = 'http://' + str(recipient_ip) + ':' + str(recipient_port)
-                # url += '/' + 'receiveMessage?sender=' + cherrypy.session['username']
-                # url += '&destination=' + str(recipient) + '&message=' + json_msg
-                # url += '&stamp=' + str(int(current_time))
                 post_data = {"sender": cherrypy.session['username'], "destination": recipient, "message": message, "stamp": int(current_time)}
                 post_data = json.dumps(post_data)
                 url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveMessage?'
                 print url
                 req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
+
                 response = urllib2.urlopen(req)
-                #print 'sending message.....' + response
-
-                self.chat += '<div style="text-align:right">'
-                self.chat += 'You: ' + message + '<br></div>'
-                cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
-                VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
-                db.commit()
-                # page = self.home()
-                # page.replace('<!-- CHAT_MESSAGES_PYTHON_VAR -->', chat + '<br> <!-- CHAT_MESSAGES_PYTHON_VAR -->')
-                #return page
-
-
-                
-
-                # success = (urllib2.urlopen(url)).read()
-                # if (success == 1): 
-                #     print 'message sent!'
-                # else: 
-                #     print 'message failed to send :-('
-                # break
+                if (int(response) == 0):
+                    self.chat += '<div style="text-align:right">'
+                    self.chat += 'You: ' + message + '<br></div>'
+                    cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
+                    VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
+                    db.commit()
+                else:
+                    print 'could not send message!'
         cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
