@@ -310,10 +310,10 @@ class MainApp(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def sendFile(self, file, recipient):
+    def sendFile(self, send_file, recipient):
         stamp = int(time.time())
-        enc_file = base64.b64encode(file.read())
-        post_data = {"sender": cherrypy.session['username'], "destination": recipient, "file": enc_file, "stamp": stamp, "filename": file.filename}
+        enc_file = base64.b64encode(send_file.file.read())
+        post_data = {"sender": cherrypy.session['username'], "destination": recipient, "file": enc_file, "stamp": stamp, "filename": send_file.filename}
         post_data = json.dumps(post_data)
 
         curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
@@ -321,12 +321,12 @@ class MainApp(object):
             if (recipient == row[1]):
                 recipient_ip = row[3]
                 recipient_port = row[4]
-            url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveFile?'
-            print url
-            req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
+                url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveFile?'
+                print url
+                req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
 
-            response = urllib2.urlopen(req).read()
-            print response
+                response = urllib2.urlopen(req).read()
+                print response
 
 
     @cherrypy.expose
