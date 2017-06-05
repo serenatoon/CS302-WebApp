@@ -235,6 +235,10 @@ class MainApp(object):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
 
+    @cherrypy.expose 
+    def listAPI(self):
+        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username]'
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveMessage(self):
