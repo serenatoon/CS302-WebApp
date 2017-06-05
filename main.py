@@ -391,6 +391,10 @@ class MainApp(object):
         db.commit()
         raise cherrypy.HTTPRedirect('/viewProfile')
 
+    @cherrypy.expose 
+    def blacklist(self, user):
+
+
 
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
 
