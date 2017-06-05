@@ -297,6 +297,7 @@ class MainApp(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveFile(self):
+        print 'Someone sent you a file!'
         data = cherrypy.request.json
         sender = data['sender']
         file = data['file']
@@ -304,9 +305,9 @@ class MainApp(object):
         stamp = data['stamp']
 
         with open(filename, "wb") as fh:
-            fh.write(base64.decodebytes(file))
-            
-        return 0
+            fh.write(file.decode('base64'))
+
+        return '0'
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
