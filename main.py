@@ -313,34 +313,38 @@ class MainApp(object):
 
     @cherrypy.expose
     def viewProfile(self, user=None):
-        # try:
-        if user is None:
-            username = cherrypy.session['username']
-        else:
-            username = user
+        try:
+            if user is None:
+                username = cherrypy.session['username']
+            else:
+                username = user
 
-        profile_data = self.getProfile(user=username)
-        page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
-        return page
-        # except KeyError:
-        #     self.msg = 'Session expired, please login again'
-        #     raise cherrypy.HTTPRedirect('/')
+            profile_data = self.getProfile(user=username)
+            page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
+            return page
+        except:
+            self.msg = 'Session expired, please login again'
+            raise cherrypy.HTTPRedirect('/')
 
     @cherrypy.expose
     def editProfile(self, parameter, changes, user=None):
+        print parameter
+        print changes
         if user is None:
             username = cherrypy.session['username']
         else:
             username = user
 
-        if (parameter == 'Full name'):
-            curs.execute('''UPDATE profiles SET fullname=? WHERE user=?''', (changes, username,))
-        elif (parameter == 'Position'):
-            curs.execute('''UPDATE profiles SET position=? WHERE user=?''', (changes, username,))
-        elif (parameter == 'Description'):
-            curs.execute('''UPDATE profiles SET description=? WHERE user=?''', (changes, username,))
-        elif (parameter == 'Location'):
-            curs.execute('''UPDATE profiles SET location=? WHERE user=?''', (changes, username,))
+        if (parameter == 'fullname'):
+            cursor.execute('''UPDATE profiles SET fullname=? WHERE username=?''', (changes, username,))
+        elif (parameter == 'position'):
+            cursor.execute('''UPDATE profiles SET position=? WHERE username=?''', (changes, username,))
+        elif (parameter == 'desc'):
+            cursor.execute('''UPDATE profiles SET description=? WHERE username=?''', (changes, username,))
+        elif (parameter == 'location'):
+            cursor.execute('''UPDATE profiles SET location=? WHERE username=?''', (changes, username,))
+        else:
+            print "invalid parameter!"
 
         db.commit()
         raise cherrypy.HTTPRedirect('/viewProfile')
