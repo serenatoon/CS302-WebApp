@@ -297,6 +297,7 @@ class MainApp(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveFile(self):
+        print 'Someone sent you a file!'
         data = cherrypy.request.json
         sender = data['sender']
         file = data['file']
@@ -304,15 +305,15 @@ class MainApp(object):
         stamp = data['stamp']
 
         with open(filename, "wb") as fh:
-            fh.write(base64.decodebytes(file))
-            
-        return 0
+            fh.write(file.decode('base64'))
+
+        return '0'
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def sendFile(self, file, recipient):
+    def sendFile(self, send_file, recipient):
         stamp = int(time.time())
-        enc_file = base64.b64encode(file.read())
+        enc_file = base64.b64encode(send_file.file.read())
         post_data = {"sender": cherrypy.session['username'], "destination": recipient, "file": enc_file, "stamp": stamp, "filename": file.filename}
         post_data = json.dumps(post_data)
 
@@ -321,12 +322,12 @@ class MainApp(object):
             if (recipient == row[1]):
                 recipient_ip = row[3]
                 recipient_port = row[4]
-            url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveFile?'
-            print url
-            req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
+                url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveFile?'
+                print url
+                req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
 
-            response = urllib2.urlopen(req).read()
-            print response
+                response = urllib2.urlopen(req).read()
+                print response
 
 
     @cherrypy.expose
