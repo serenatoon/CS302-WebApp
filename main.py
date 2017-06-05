@@ -51,10 +51,8 @@ def createTable(db, create_table_sql):
 
 def insertUser(user_details, db, cursor): 
     username = user_details[0]
-    print username 
     location = user_details[1]
     ip = user_details[2]
-    print ip
     port = user_details[3]
     login_time = user_details[4]
     cursor.execute('''SELECT * FROM user_list WHERE username=?''', (username,))
@@ -81,8 +79,6 @@ def initProfile(user_details, db, cursor):
         cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
         VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
         db.commit() 
-    else:
-        print 'User already has a profile!'
 
 class MainApp(object):
     msg = " "
