@@ -242,19 +242,19 @@ class MainApp(object):
         data = cherrypy.request.json
         print data
         print data['message']
-        if (data['destination'] == cherrypy.session['username']):
-            cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
-            VALUES (?, ?, ?, ?)''', (data['sender'], data['destination'], data['message'], data['stamp']))
-            db.commit()
-            self.chat_error = 'Someone sent you a message!: ' + data['message']
-            print self.chat_error
-            self.chat += '<div style="text-align:left">'
-            self.chat += data['sender'] + ': ' + data['message'] + '<br></div>'
-            return '0'
-        else:
+        # if (data['destination'] == cherrypy.session['username']):
+        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
+        VALUES (?, ?, ?, ?)''', (data['sender'], data['destination'], data['message'], data['stamp']))
+        db.commit()
+        self.chat_error = 'Someone sent you a message!: ' + data['message']
+        print self.chat_error
+        self.chat += '<div style="text-align:left">'
+        self.chat += data['sender'] + ': ' + data['message'] + '<br></div>'
+        return '0'
+        # else:
         # except:
-            return '6'
-            print 'could not receive message!'
+        # return '5'
+        # print 'could not receive message!'
         #     self.chat_error = 'Could not receive message!'
         #     print self.chat_error
         #     return '0'
