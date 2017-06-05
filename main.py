@@ -10,6 +10,7 @@ import threading
 import sqlite3
 import json
 import datetime
+import base64
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
@@ -292,6 +293,16 @@ class MainApp(object):
                 self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
                 self.conversation += 'You: ' + row[3] + '<br></div>'
         raise cherrypy.HTTPRedirect('/home')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def receiveFile(self):
+        data = cherrypy.request.json
+        sender = data['sender']
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def sendFile(self)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
