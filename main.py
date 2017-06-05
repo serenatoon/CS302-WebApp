@@ -263,17 +263,18 @@ class MainApp(object):
                 print url
                 req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
 
-                response = urllib2.urlopen(req)
-                print str(response)
+                #response = urllib2.urlopen(req)
+                # print str(response)
                 # if (str(response[0]) == 0):
                 self.chat += '<div style="text-align:right">'
                 self.chat += 'You: ' + message + '<br></div>'
                 cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
                 VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
                 db.commit()
+                break
                 # else:
                 #     print 'could not send message!'
-        cherrypy.HTTPRedirect('/home')
+        #cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
     def viewConversation(self, username):
