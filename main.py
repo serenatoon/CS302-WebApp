@@ -16,12 +16,7 @@ def getIP():
     try:
         ip = socket.gethostbyname(socket.getfqdn())  # return fully-qualified domain name
     except:
-        ip = socket.gethostbyname(socket.gethostname())
-    # if (not ip) or (ip.startswith('127.')):
-    #   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # create new socket 
- #        s.connect(("8.8.8.8", 80)) # open socket to google's DNS server 
- #        ip = s.getsockname()[0] # take address from that connection 
-   
+        ip = socket.gethostbyname(socket.gethostname()) 
     return ip
 
 
@@ -52,18 +47,6 @@ def createTable(db, create_table_sql):
         db.commit() 
     except Error as e:
         print(e)
-
-# def formatUserList(response):
-#   user_details = response.replace("0, Online user list returned", "")
-
-#   user_details = user_details.split() 
-#   for i in range (len(user_details)):
-#       if (',' in user_details[i]):
-#           split_details = user_details[i].split(',')
-#           if (split_details[0] != cherrypy.session['username']):
-#               print split_details[0]
-#               insertUser(split_details, db, cursor)
-#               # TODO: put in db 
 
 def insertUser(user_details, db, cursor): 
     username = user_details[0]
