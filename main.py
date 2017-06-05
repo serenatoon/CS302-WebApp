@@ -263,7 +263,8 @@ class MainApp(object):
                 print url
                 req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
 
-                #response = urllib2.urlopen(req)
+                response = urllib2.urlopen(req).read()
+                print response
                 # print str(response)
                 # if (str(response[0]) == 0):
                 self.chat += '<div style="text-align:right">'
@@ -274,7 +275,7 @@ class MainApp(object):
                 break
                 # else:
                 #     print 'could not send message!'
-        #cherrypy.HTTPRedirect('/home')
+        cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
     def viewConversation(self, username):
