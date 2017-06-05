@@ -302,10 +302,14 @@ class MainApp(object):
             username = user
 
         print 'getProfile requesting ' + username
-        curs = db.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
-        profile_data = curs.fetchone()
-        print profile_data  
-        return profile_data
+        # In order to output as dict, need dto utilise row_factory
+        db_row = sqlite3.connect(db_file, check_same_thread=False)
+        db_row.row_factory = sqlite3.Row
+        c = db_row.cursor()
+        c.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+        profile_data = c.fetchone()
+        print dict(profile_data)
+        return dict(profile_data)
 
     @cherrypy.expose
     def viewProfile(self, user=None):
