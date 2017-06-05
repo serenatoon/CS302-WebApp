@@ -294,7 +294,7 @@ class MainApp(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
-    def getProfile(self, user=None)
+    def getProfile(self, user=None):
         if user is None:
             data = cherrypy.request.json
             username = data['profile_username']
@@ -302,13 +302,14 @@ class MainApp(object):
             username = user
 
         print 'getProfile requesting ' + username
+        # In order to output as dict, need dto utilise row_factory
         db_row = sqlite3.connect(db_file, check_same_thread=False)
         db_row.row_factory = sqlite3.Row
         c = db_row.cursor()
         c.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
         profile_data = c.fetchone()
-        print profile_data  
-        #return profile_data
+        print dict(profile_data)
+        return dict(profile_data)
 
     @cherrypy.expose
     def viewProfile(self, user=None):
