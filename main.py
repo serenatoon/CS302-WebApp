@@ -223,7 +223,7 @@ class MainApp(object):
 
     @cherrypy.expose 
     def listAPI(self):
-        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username]'
+        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp]'
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -297,11 +297,12 @@ class MainApp(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def receiveFile(self):
-        print 'Someone sent you a file!'
+        print 'Someone sent you a file! '
         data = cherrypy.request.json
         sender = data['sender']
         file = data['file']
         filename = data['filename']
+        print filename
         stamp = data['stamp']
 
         with open(filename, "wb") as fh:
@@ -331,7 +332,6 @@ class MainApp(object):
 
                 response = urllib2.urlopen(req).read()
                 print response
-
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
