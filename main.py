@@ -299,10 +299,20 @@ class MainApp(object):
     def receiveFile(self):
         data = cherrypy.request.json
         sender = data['sender']
+        file = data['file']
+        filename = data['filename']
+        stamp = data['stamp']
+
+        with open(filename, "wb") as fh:
+            fh.write(base64.decodebytes(file))
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def sendFile(self)
+    def sendFile(self, file, recipient):
+        stamp = int(time.time())
+        enc_file = base64.b64encode(file.read())
+        return {"sender": cherrypy.session['username'], "destination": recipient, "file": enc_file, "stamp": stamp, "filename": file.filename}
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
