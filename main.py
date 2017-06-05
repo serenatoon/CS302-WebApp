@@ -51,16 +51,18 @@ def createTable(db, create_table_sql):
 def insertUser(user_details, db, cursor): 
     username = user_details[0]
     print username 
+    location = user_details[1]
+    ip = user_details[2]
+    print ip
+    port = user_details[3]
+    login_time = user_details[4]
     cursor.execute('''SELECT * FROM user_list WHERE username=?''', (username,))
     if (cursor.fetchone() is None):
-        location = user_details[1]
-        ip = user_details[2]
-        print ip
-        port = user_details[3]
-        login_time = user_details[4]
         cursor.execute('''INSERT INTO user_list (username, location, ip, port, login_time)
         VALUES (?, ?, ?, ?, ?)''', (username, location, ip, port, login_time))
-        db.commit()
+    else:
+        cursor.execute('''UPDATE user_list SET location=?, ip=?, port=?, login_time=? WHERE username=?''', (location, ip, port, login_time, username,))
+    db.commit()
 
 def initProfile(user_details, db, cursor):
     username = user_details[0]
@@ -308,7 +310,7 @@ class MainApp(object):
         c = db_row.cursor()
         c.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
         profile_data = c.fetchone()
-        print dict(profile_data)
+        #print dict(profile_data)
         return dict(profile_data)
 
     @cherrypy.expose
