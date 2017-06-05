@@ -314,7 +314,10 @@ class MainApp(object):
     def sendFile(self, send_file, recipient):
         stamp = int(time.time())
         enc_file = base64.b64encode(send_file.file.read())
-        post_data = {"sender": cherrypy.session['username'], "destination": recipient, "file": enc_file, "stamp": stamp, "filename": send_file.filename}
+        #filetype = magic.Magic(mime=True)
+        #filetype.from_file(file)
+        post_data = {"sender": cherrypy.session['username'], "destination": recipient, "file": enc_file, "stamp": stamp, "filename": send_file.filename, "content_type": str(send_file.content_type)}
+        print send_file.content_type
         post_data = json.dumps(post_data)
 
         curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
