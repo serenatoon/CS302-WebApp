@@ -225,7 +225,7 @@ class MainApp(object):
     @cherrypy.tools.json_in()
     def receiveMessage(self):
         # try:
-        data = cherrypy.request.json
+        data = (cherrypy.request.json).decode('utf-8')
         print data
         print data['message']
         # if (data['destination'] == cherrypy.session['username']):
