@@ -11,6 +11,9 @@ import sqlite3
 import json
 import datetime
 import base64
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
