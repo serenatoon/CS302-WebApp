@@ -269,7 +269,7 @@ class MainApp(object):
                 response = urllib2.urlopen(req).read()
                 print response
                 # print str(response)
-                if (str(response[0]) == 0):
+                if (str(response[0]) == '0'):
                     self.chat = 'Message sent!'
                     cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
                     VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
