@@ -11,6 +11,9 @@ import sqlite3
 import json
 import datetime
 import base64
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Returns the internal IP address of the current machine of which the server is to be hosted on 
 def getIP():
@@ -257,6 +260,7 @@ class MainApp(object):
                 recipient_port = row[4]
 
                 post_data = {"sender": cherrypy.session['username'], "destination": recipient, "message": message, "stamp": int(current_time)}
+                #post_data = post_data.encode('utf8')
                 post_data = json.dumps(post_data)
                 url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveMessage?'
                 print url
@@ -265,7 +269,7 @@ class MainApp(object):
                 response = urllib2.urlopen(req).read()
                 print response
                 # print str(response)
-                if (str(response[0]) == 0):
+                if (str(response[0]) == '0'):
                     self.chat = 'Message sent!'
                     cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
                     VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
@@ -416,7 +420,12 @@ def runMainApp():
     cherrypy.config.update({'server.socket_host': '0.0.0.0',
                         'server.socket_port': port,
                         #'engine.autoreload.on': True,
+                        'tools.encode.on': True,
+                        'tools.encode.encoding': 'utf-8'
                         })
+
+    # cherrypy.config["tools.enconde.on"] = True
+    # cherrypy.config["tools.encode.encoding"] = "utf-8"
 
 
     cherrypy.engine.start() # start webserver
