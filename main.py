@@ -12,6 +12,7 @@ import json
 import datetime
 import base64
 import sys
+from cherrypy.process.plugins import Monitor
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -88,6 +89,8 @@ class MainApp(object):
     chat_error = ""
     chat = ""
     conversation = ""
+    upi = ""
+    pw = ""
 
     global db
     db = connectDatabse(db_file)
@@ -123,14 +126,18 @@ class MainApp(object):
     @cherrypy.expose
     def signin(self, username=None, password=None): 
         hash_pw = hashlib.sha256(str(password+salt)).hexdigest()
-        error = self.authoriseLogin(username, hash_pw)
+        error = self.report(username, hash_pw)
         print error
         if (int(error) == 0):
+            self.upi = username
+            self.pw = hash_pw
             cherrypy.session['username'] = username
             cherrypy.session['password'] = hash_pw 
-            self.t = threading.Thread(target=self.report, args=[cherrypy.session['username'], cherrypy.session['password'], False])
-            self.daemon = True
-            self.t.start()
+            # self.t = threading.Thread(target=self.report, args=[cherrypy.session['username'], cherrypy.session['password'], False])
+            # self.daemon = True
+            # self.t.start()
+            report_thread = Monitor(cherrypy.engine, self.reportThread, frequency=10)
+            report_thread.start()
             raise cherrypy.HTTPRedirect('/home')
         else:
             print "login failed!2"
@@ -139,29 +146,44 @@ class MainApp(object):
 
        
     @cherrypy.expose
-    def report(self, username, hash_pw, first_login):
-        response = 0
-        if (int(response) == 0):
-            #time.sleep(30)
-            try:
-                url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
-                url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
-                url += '&port=' + str(port) + '&enc=0'
-                print "logged in as " + username
-            except:
-                self.msg = 'Login failed!'
-                print "login failed!"
-                raise cherrypy.HTTPRedirect('/')
-            # Getting the error code from the server
-            response_message = (urllib2.urlopen(url)).read()
-            response = str(response_message)[0]
-            # Display response message from the server
-            print "Server response: " + str(response_message)
-            return response
-         
+    def report(self, username, hash_pw):
+        #time.sleep(30)
+        try:
+            url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
+            url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
+            url += '&port=' + str(port) + '&enc=0'
+            print "logged in as " + username
+        except:
+            self.msg = 'Login failed!'
+            print "login failed!"
+            raise cherrypy.HTTPRedirect('/')
+        # Getting the error code from the server
+        response_message = (urllib2.urlopen(url)).read()
+        response = str(response_message)[0]
+        # Display response message from the server
+        print "Server response: " + str(response_message)
+        return response
+
+    @cherrypy.expose
+    def reportThread(self):
+        print 'reporting'
+        # try:
+        url = 'http://cs302.pythonanywhere.com/report?username=' + self.upi
+        url += '&password=' + self.pw + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
+        url += '&port=' + str(port) + '&enc=0'
+        print "reported!"
+        response_message = (urllib2.urlopen(url)).read()
+        response = str(response_message)[0]
+        # Display response message from the server
+        print "Server response: " + str(response_message)
+        # except:
+        #     print "could not report!"
+        # Getting the error code from the server
+        return
+          
 
     def authoriseLogin(self, username, hash_pw):
-        return self.report(username, hash_pw, True)
+        return self.report(username, hash_pw)
 
     def checkLogin(self, page):
         logged_in = True
@@ -182,6 +204,7 @@ class MainApp(object):
     def signout(self):
         try:
             url = 'http://cs302.pythonanywhere.com/logoff?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
+            report_thread.stop()
         except: 
             print 'logout failed'
         response = (urllib2.urlopen(url)).read()
