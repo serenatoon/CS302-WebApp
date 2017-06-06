@@ -225,7 +225,7 @@ class MainApp(object):
     @cherrypy.tools.json_in()
     def receiveMessage(self):
         # try:
-        data = (cherrypy.request.json).decode('utf-8')
+        #data = (cherrypy.request.json).decode('utf-8')
         print data
         print data['message']
         # if (data['destination'] == cherrypy.session['username']):
@@ -257,7 +257,7 @@ class MainApp(object):
                 recipient_port = row[4]
 
                 post_data = {"sender": cherrypy.session['username'], "destination": recipient, "message": message, "stamp": int(current_time)}
-                post_data = post_data.encode('utf8')
+                #post_data = post_data.encode('utf8')
                 post_data = json.dumps(post_data)
                 url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveMessage?'
                 print url
@@ -417,7 +417,12 @@ def runMainApp():
     cherrypy.config.update({'server.socket_host': '0.0.0.0',
                         'server.socket_port': port,
                         #'engine.autoreload.on': True,
+                        'tools.encode.on': True,
+                        'tools.encode.encoding': 'utf-8'
                         })
+
+    # cherrypy.config["tools.enconde.on"] = True
+    # cherrypy.config["tools.encode.encoding"] = "utf-8"
 
 
     cherrypy.engine.start() # start webserver
