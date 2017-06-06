@@ -257,6 +257,7 @@ class MainApp(object):
                 recipient_port = row[4]
 
                 post_data = {"sender": cherrypy.session['username'], "destination": recipient, "message": message, "stamp": int(current_time)}
+                post_data = post_data.encode('utf8')
                 post_data = json.dumps(post_data)
                 url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveMessage?'
                 print url
