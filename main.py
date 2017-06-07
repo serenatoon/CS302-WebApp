@@ -32,6 +32,8 @@ port = 10008  # TCP port to listen
 salt = "COMPSYS302-2017"
 db_file = 'app.db'
 curs = ''
+upi = ""
+pw = ""
 
 
 def connectDatabse(db_file):
@@ -89,8 +91,6 @@ class MainApp(object):
     chat_error = ""
     chat = ""
     conversation = ""
-    upi = ""
-    pw = ""
 
     global db
     db = connectDatabse(db_file)
@@ -129,15 +129,16 @@ class MainApp(object):
         error = self.report(username, hash_pw)
         print error
         if (int(error) == 0):
-            self.upi = username
-            self.pw = hash_pw
+            global upi
+            global pw
+            upi = username
+            pw = hash_pw
             cherrypy.session['username'] = username
             cherrypy.session['password'] = hash_pw 
             # self.t = threading.Thread(target=self.report, args=[cherrypy.session['username'], cherrypy.session['password'], False])
             # self.daemon = True
             # self.t.start()
-            report_thread = Monitor(cherrypy.engine, self.reportThread, frequency=10)
-            report_thread.start()
+            self.report_thread.start()
             raise cherrypy.HTTPRedirect('/home')
         else:
             print "login failed!2"
@@ -165,13 +166,13 @@ class MainApp(object):
         return response
 
     @cherrypy.expose
-    def reportThread(self):
+    def reportThread():
         print 'reporting'
         # try:
-        url = 'http://cs302.pythonanywhere.com/report?username=' + self.upi
-        url += '&password=' + self.pw + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
+        url = 'http://cs302.pythonanywhere.com/report?username=' + upi
+        url += '&password=' + pw + '&location=' + '2' + '&ip=' + ext_ip # TODO: DON'T HARDCODE LOCATION
         url += '&port=' + str(port) + '&enc=0'
-        print "reported!"
+        print url
         response_message = (urllib2.urlopen(url)).read()
         response = str(response_message)[0]
         # Display response message from the server
@@ -181,6 +182,8 @@ class MainApp(object):
         # Getting the error code from the server
         return
           
+    report_thread = Monitor(cherrypy.engine, reportThread, frequency=10)
+
 
     def authoriseLogin(self, username, hash_pw):
         return self.report(username, hash_pw)
@@ -202,11 +205,11 @@ class MainApp(object):
 
     @cherrypy.expose
     def signout(self):
-        try:
-            url = 'http://cs302.pythonanywhere.com/logoff?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
-            report_thread.stop()
-        except: 
-            print 'logout failed'
+        # try:
+        url = 'http://cs302.pythonanywhere.com/logoff?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
+        self.report_thread.stop()
+        # except: 
+        #     print 'logout failed'
         response = (urllib2.urlopen(url)).read()
         error = str(response)[0]
         if (int(error) == 0):
