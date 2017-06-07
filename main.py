@@ -182,7 +182,9 @@ class MainApp(object):
         # Getting the error code from the server
         return
           
-    report_thread = Monitor(cherrypy.engine, reportThread, frequency=10)
+    # Thread to report to login server regularly
+    # Will report once every 60 seconds 
+    report_thread = Monitor(cherrypy.engine, reportThread, frequency=60) 
 
 
     def authoriseLogin(self, username, hash_pw):
@@ -248,7 +250,7 @@ class MainApp(object):
 
     @cherrypy.expose 
     def listAPI(self):
-        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp]'
+        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username] [sender] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp]'
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -315,13 +317,17 @@ class MainApp(object):
         curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
         for row in curs: 
             if (username == row[1]):
-                self.conversation += '<div style="text-align:left">'
-                self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
-                self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+                # self.conversation += '<div style="text-align:left">'
+                # self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
+                # self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+                self.conversation += '<div class="bubble you">'
+                self.conversation += row[3] + '</div>'
             elif (username == row[2]):
-                self.conversation += '<div style="text-align:right">'
-                self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
-                self.conversation += 'You: ' + row[3] + '<br></div>'
+                # self.conversation += '<div style="text-align:right">'
+                # self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
+                # self.conversation += 'You: ' + row[3] + '<br></div>'
+                self.conversation += '<div class="bubble me">'
+                self.conversation += row[3] + '</div>'
         raise cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
