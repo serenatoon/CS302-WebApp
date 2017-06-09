@@ -12,6 +12,7 @@ $('.left .person').mousedown(function(){
         $('.left .person').removeClass('active');
         $(this).addClass('active');
         $('.chat[data-chat = '+findChat+']').addClass('active-chat');
+        $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);
     }
 });
 
