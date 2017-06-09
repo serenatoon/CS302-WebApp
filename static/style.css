@@ -320,7 +320,7 @@ ul.people {
   margin-bottom: 8px;
   padding: 13px 14px;
   vertical-align: top;
-  border-radius: 5px;
+  border-radius: 1px;
 }
 .container .right .bubble:before {
   position: absolute;
