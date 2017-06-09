@@ -103,7 +103,7 @@ def initChat(db):
         chat += '</div>'
     return chat
 
-def viewConversation(db, username)
+def viewConversation(db, username):
     conversation = ""
     curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
     for row in curs: 
@@ -281,7 +281,7 @@ class MainApp(object):
             return ", ".join(usernames)
 
     @cherrypy.expose
-    def ping(sender):
+    def ping(self):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
 
