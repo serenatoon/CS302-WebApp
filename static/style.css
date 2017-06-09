@@ -202,7 +202,7 @@ ul.people {
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
-          flex-direction: column;
+          flex-direction: column-reverse;
 }
 .container .right .chat.active-chat {
   display: -webkit-box;
@@ -210,7 +210,7 @@ ul.people {
   /*display: flex;*/
   display: block;
   -webkit-flex: 1 1 auto;
-  overflow-y: auto;
+  overflow-y: scroll;
   min-height: 0px;
 }
 .container .right .chat.active-chat .bubble {

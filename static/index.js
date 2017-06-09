@@ -1,5 +1,5 @@
-$('.chat[data-chat=person2]').addClass('active-chat');
-$('.person[data-chat=person2]').addClass('active');
+$('.chat[data-chat=mwon724]').addClass('active-chat');
+$('.person[data-chat=mwon724]').addClass('active');
 
 $('.left .person').mousedown(function(){
     if ($(this).hasClass('.active')) {
@@ -14,3 +14,5 @@ $('.left .person').mousedown(function(){
         $('.chat[data-chat = '+findChat+']').addClass('active-chat');
     }
 });
+
+$('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);

@@ -256,7 +256,7 @@ class MainApp(object):
             cherrypy.session.clear() # clear user session 
             raise cherrypy.HTTPRedirect('/')
 
-    def getList(self): 
+    def getList(self):
         try: 
             url = 'http://cs302.pythonanywhere.com/getList?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
         except: 
