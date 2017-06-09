@@ -92,6 +92,12 @@ body {
   border-right: 1px solid #e6e6e6;
   border-left: 1px solid #e6e6e6;
   width: calc(100% + 2px);
+  overflow:hidden;
+}
+ul.people {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 70%;
 }
 .container .left .people .person {
   position: relative;

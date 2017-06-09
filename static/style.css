@@ -92,6 +92,12 @@ body {
   border-right: 1px solid #e6e6e6;
   border-left: 1px solid #e6e6e6;
   width: calc(100% + 2px);
+/*  overflow:hidden;*/
+}
+ul.people {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 70%;
 }
 .container .left .people .person {
   position: relative;
@@ -199,10 +205,13 @@ body {
           flex-direction: column;
 }
 .container .right .chat.active-chat {
-  display: block;
   display: -webkit-box;
   display: -ms-flexbox;
-  display: flex;
+  /*display: flex;*/
+  display: block;
+  -webkit-flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0px;
 }
 .container .right .chat.active-chat .bubble {
   -webkit-transition-timing-function: cubic-bezier(0.4, -0.04, 1, 1);
@@ -250,13 +259,13 @@ body {
 }
 .container .right .write {
   position: absolute;
-  bottom: 29px;
-  left: 30px;
+  bottom: 2px;
+  /*left: 30px;*/
   height: 42px;
   padding-left: 8px;
-  border: 1px solid #e6e6e6;
+  /*border: 1px solid #e6e6e6;*/
   background-color: #eceff1;
-  width: calc(100% - 58px);
+  width: 100%;
   border-radius: 5px;
 }
 .container .right .write input {
@@ -340,8 +349,10 @@ body {
   float: right;
   color: #1a1a1a;
   background-color: #eceff1;
-  -ms-flex-item-align: end;
-      align-self: flex-end;
+/*  -ms-flex-item-align: end;
+      align-self: flex-end;*/
+      justify-content: flex-end;
+      align-items: flex-end;
   -webkit-animation-name: slideFromRight;
   animation-name: slideFromRight;
 }
