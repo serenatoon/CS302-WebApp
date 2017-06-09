@@ -514,3 +514,6 @@ ul.people {
     display: block;
     height: 2px;
 }
+::-webkit-scrollbar-button:vertical:increment {
+    height:40px;
+}
