@@ -348,7 +348,7 @@ ul.people {
 .container .right .bubble.me {
   float: right;
   color: #fff;
-  background-color: #82C0F7;
+  background-color: #90CAF9;
 /*  -ms-flex-item-align: end;
       align-self: flex-end;*/
       justify-content: flex-end;
@@ -358,7 +358,7 @@ ul.people {
 }
 .container .right .bubble.me:before {
   right: -3px;
-  background-color: #82C0F7;
+  background-color: #90CAF9;
 }
 .container .right .conversation-start {
   position: relative;
