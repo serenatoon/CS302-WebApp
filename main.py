@@ -283,7 +283,7 @@ class MainApp(object):
     @cherrypy.expose
     def ping(self, sender=None):
         print 'SOMEONE PINGED YOU!!!!!'
-        return 0
+        return '0'
 
     @cherrypy.expose 
     def listAPI(self):
