@@ -27,8 +27,10 @@ $(function() {
            });
         var update_data = {username: personName} ;
         $.post('/updateConversation', update_data, function(conv) {
-                $('.chat.active-chat').innerHTML = conv;
+                $('.chat.active-chat').html(conv);
+
            });
         return false ;
         });
     });
+
