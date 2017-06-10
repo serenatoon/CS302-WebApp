@@ -429,6 +429,13 @@ class MainApp(object):
         with open(filename, "wb") as fh:
             fh.write(file.decode('base64'))
 
+        try:
+            cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
+            VALUES (?, ?, ?, ?)''', (sender, cherrypy.session['username'], file, stamp))
+            db.commit()
+        except:
+            print 'failed to put file in db!'
+
         return '0'
 
     @cherrypy.expose
@@ -453,6 +460,11 @@ class MainApp(object):
 
                 response = urllib2.urlopen(req).read()
                 print response
+                break
+
+        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
+        VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp))
+        db.commit()        
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
