@@ -315,7 +315,7 @@ class MainApp(object):
         #print self.chat_error
 
     @cherrypy.expose 
-    def sendMessage(self, recipient, message)
+    def sendMessage(self, recipient, message):
         print recipient
         current_time = time.time()
         curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
@@ -348,6 +348,25 @@ class MainApp(object):
                 # else:
                 #     print 'could not send message!'
         cherrypy.HTTPRedirect('/home')
+
+    @cherrypy.expose
+    def updateConversation(self, username):
+    conversation = ""
+    curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
+    for row in curs: 
+        if (username == row[1]):
+            # self.conversation += '<div style="text-align:left">'
+            # self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
+            # self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+            conversation += '<div class="bubble you">'
+            conversation += row[3] + '</div>'
+        elif (username == row[2]):
+            # self.conversation += '<div style="text-align:right">'
+            # self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
+            # self.conversation += 'You: ' + row[3] + '<br></div>'
+            conversation += '<div class="bubble me">'
+            conversation += row[3] + '</div>'
+    return conversation
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

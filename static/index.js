@@ -19,13 +19,15 @@ $('.left .person').mousedown(function(){
 $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);
 
 $(function() {
-    // When the testform is submitted…
+    // When message is submitted 
     $("#sendChat").submit(function() {
-        // post the form values via AJAX…
-        var postdata = {message: $("#message").val(), recipient: personName} ;
-        $.post('/sendMessage', postdata, function(data) {
-            // and set the title with the result
-            // $("#title").html(data['title']) ;
+        // Post values (message, recipient) via AJAX
+        var post_data = {message: $("#message").val(), recipient: personName} ;
+        $.post('/sendMessage', post_data, function(data) {
+           });
+        var update_data = {username: personName} ;
+        $.post('/updateConversation', update_data, function(conv) {
+                $('.chat.active-chat').innerHTML = conv;
            });
         return false ;
         });
