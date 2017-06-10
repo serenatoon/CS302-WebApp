@@ -521,3 +521,7 @@ img {
   width: auto;
   max-height: 200px;
 }
+video {
+  width: auto;
+  max-height: 300px;
+}

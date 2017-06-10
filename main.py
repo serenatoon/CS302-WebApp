@@ -404,18 +404,34 @@ class MainApp(object):
                 conversation += '<div class="bubble you">'
                 if row[5] is None:
                     conversation += row[3] + '</div>'
-                else:
+                elif 'image' in row[5]:
                     conversation += '<img src="data:' + row[5] + ';base64,'
                     conversation += row[3] + '"/></div>'
+                elif 'audio' in row[5]:
+                    conversation += '<audio controls src="data:' + row[5] + ';base64,'
+                    conversation += row[3] + '"/></div>'
+                elif 'video' in row[5]:
+                    conversation += '<video controls><source type="video/webm" src="data:video/webm;base64,'
+                    conversation += row[3] + '">'
+                    conversation += '<source type=' + row[5] + 'src="' + row[5]
+                    conversation += ';base64,' + row[3] + '"></video></div>'
 
             elif (username == row[2]):
 
                 conversation += '<div class="bubble me">'
                 if row[5] is None:
                     conversation += row[3] + '</div>'
-                else:
+                elif 'image' in row[5]:
                     conversation += '<img src="data:' + row[5] + ';base64, '
                     conversation += row[3] + '"/></div>'
+                elif 'audio' in row[5]:
+                    conversation += '<audio controls src="data:' + row[5] + ';base64,'
+                    conversation += row[3] + '"/></div>'
+                elif 'video' in row[5]:
+                    conversation += '<video controls><source type="video/webm" src="data:video/webm;base64,'
+                    conversation += row[3] + '">'
+                    conversation += '<source type=' + row[5] + 'src="' + row[5]
+                    conversation += ';base64,' + row[3] + '"></video></div>'
         #print conversation
         return conversation
 
