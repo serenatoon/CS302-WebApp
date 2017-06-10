@@ -509,6 +509,36 @@ class MainApp(object):
         return dict(profile_data)
 
     @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def retrieveProfile(self, user=None):
+        cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
+        row = c.fetchone()
+        ip = row[3]
+        port = row[4]
+        url = 'http://' + ip + ':' + port + '/'
+        status = ""
+        # try:
+        post_data = {"profile_username": user}
+        #post_data = post_data.encode('utf8')
+        post_data = json.dumps(post_data)
+        getStatus_url = url + 'getProfile?'
+        req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
+        response = urllib2.urlopen(req).read()
+        print 'getStatus: ' + response
+        data = json.loads(response)
+        print data
+        cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+        if (cursor.fetchone() is None):
+            cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
+            VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
+        else:
+            cursor.execute('''UPDATE profiles SET fullname=?, position=?, description=?, location=?, picture=? WHERE username=?''', (data['fullname'], data['position'], data['description'], data['location'], data['picture']))
+        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, username))
+        db.commit()
+
+
+    @cherrypy.expose
     def viewProfile(self, user=None):
         try:
             if user is None:
