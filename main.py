@@ -108,7 +108,7 @@ def initChat(db):
     curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
     for row in curs: 
         chat += '<div class="chat" data-chat="' + row[1] + '">'
-        chat += viewConversation(db, row[1])
+        #chat += viewConversation(db, row[1])
         chat += '</div>'
     return chat
 
@@ -398,20 +398,40 @@ class MainApp(object):
     @cherrypy.expose
     def updateConversation(self, username):
         conversation = ""
-        curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
+        curs = db.execute("""SELECT id, sender, recipient, message, stamp, mime from messages""")
         for row in curs: 
             if (username == row[1]):
-                # self.conversation += '<div style="text-align:left">'
-                # self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
-                # self.conversation += row[1] + ': ' + row[3] + '<br></div>'
                 conversation += '<div class="bubble you">'
-                conversation += row[3] + '</div>'
+                if row[5] is None:
+                    conversation += row[3] + '</div>'
+                elif 'image' in row[5]:
+                    conversation += '<img src="data:' + row[5] + ';base64,'
+                    conversation += row[3] + '"/></div>'
+                elif 'audio' in row[5]:
+                    conversation += '<audio controls src="data:' + row[5] + ';base64,'
+                    conversation += row[3] + '"/></div>'
+                elif 'video' in row[5]:
+                    conversation += '<video controls><source type="video/webm" src="data:video/webm;base64,'
+                    conversation += row[3] + '">'
+                    conversation += '<source type=' + row[5] + 'src="' + row[5]
+                    conversation += ';base64,' + row[3] + '"></video></div>'
+
             elif (username == row[2]):
-                # self.conversation += '<div style="text-align:right">'
-                # self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
-                # self.conversation += 'You: ' + row[3] + '<br></div>'
+
                 conversation += '<div class="bubble me">'
-                conversation += row[3] + '</div>'
+                if row[5] is None:
+                    conversation += row[3] + '</div>'
+                elif 'image' in row[5]:
+                    conversation += '<img src="data:' + row[5] + ';base64, '
+                    conversation += row[3] + '"/></div>'
+                elif 'audio' in row[5]:
+                    conversation += '<audio controls src="data:' + row[5] + ';base64,'
+                    conversation += row[3] + '"/></div>'
+                elif 'video' in row[5]:
+                    conversation += '<video controls><source type="video/webm" src="data:video/webm;base64,'
+                    conversation += row[3] + '">'
+                    conversation += '<source type=' + row[5] + 'src="' + row[5]
+                    conversation += ';base64,' + row[3] + '"></video></div>'
         #print conversation
         return conversation
 
@@ -421,13 +441,22 @@ class MainApp(object):
         print 'Someone sent you a file! '
         data = cherrypy.request.json
         sender = data['sender']
+        recipient = data['destination']
         file = data['file']
         filename = data['filename']
+        mime = data['content_type']
         print filename
         stamp = data['stamp']
 
         with open(filename, "wb") as fh:
             fh.write(file.decode('base64'))
+
+        try:
+            cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp, mime)
+            VALUES (?, ?, ?, ?, ?)''', (sender, recipient, file, stamp, mime))
+            db.commit()
+        except:
+            print 'failed to put file in db!'
 
         return '0'
 
@@ -453,6 +482,11 @@ class MainApp(object):
 
                 response = urllib2.urlopen(req).read()
                 print response
+                break
+
+        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
+        VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp))
+        db.commit()        
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
