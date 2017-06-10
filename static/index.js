@@ -28,8 +28,9 @@ $(function() {
         var update_data = {username: personName} ;
         $.post('/updateConversation', update_data, function(conv) {
                 $('.chat.active-chat').html(conv);
-
+                $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);
            });
+        
         return false ;
         });
     });
