@@ -517,3 +517,7 @@ ul.people {
 ::-webkit-scrollbar-button:vertical:increment {
     height:40px;
 }
+img {
+  width: auto;
+  max-height: 200px;
+}

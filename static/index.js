@@ -42,5 +42,5 @@ window.setInterval(function(){
                 $('.chat.active-chat').html(conv); // add new bubble 
                 $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight); // scroll to bottom
            });
-}, 1000);
+}, 10000);
 

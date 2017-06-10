@@ -108,7 +108,7 @@ def initChat(db):
     curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
     for row in curs: 
         chat += '<div class="chat" data-chat="' + row[1] + '">'
-        chat += viewConversation(db, row[1])
+        #chat += viewConversation(db, row[1])
         chat += '</div>'
     return chat
 
@@ -401,13 +401,21 @@ class MainApp(object):
         curs = db.execute("""SELECT id, sender, recipient, message, stamp, mime from messages""")
         for row in curs: 
             if (username == row[1]):
+                conversation += '<div class="bubble you">'
                 if row[5] is None:
-                    conversation += '<div class="bubble you">'
                     conversation += row[3] + '</div>'
+                else:
+                    conversation += '<img src="data:' + row[5] + ';base64,'
+                    conversation += row[3] + '"/></div>'
+
             elif (username == row[2]):
+
+                conversation += '<div class="bubble me">'
                 if row[5] is None:
-                    conversation += '<div class="bubble me">'
                     conversation += row[3] + '</div>'
+                else:
+                    conversation += '<img src="data:' + row[5] + ';base64, '
+                    conversation += row[3] + '"/></div>'
         #print conversation
         return conversation
 
