@@ -26,7 +26,7 @@ def getIP():
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = '122.62.141.222'
+ext_ip = '49.224.195.211'
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -84,7 +84,42 @@ def initProfile(user_details, db, cursor):
             location_str = '???'
         cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
         VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
-        db.commit() 
+        db.commit()
+
+def initPeople(db):
+    people = ""
+    curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
+    for row in curs: 
+        people += '<li class="person" data-chat="' + row[1] + '">'
+        people += '<span class="name">' + row[1] + '</span>'
+    return people
+
+def initChat(db):
+    chat = ""
+    curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
+    for row in curs: 
+        chat += '<div class="chat" data-chat="' + row[1] + '">'
+        chat += viewConversation(db, row[1])
+        chat += '</div>'
+    return chat
+
+def viewConversation(db, username):
+    conversation = ""
+    curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
+    for row in curs: 
+        if (username == row[1]):
+            # self.conversation += '<div style="text-align:left">'
+            # self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
+            # self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+            conversation += '<div class="bubble you">'
+            conversation += row[3] + '</div>'
+        elif (username == row[2]):
+            # self.conversation += '<div style="text-align:right">'
+            # self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
+            # self.conversation += 'You: ' + row[3] + '<br></div>'
+            conversation += '<div class="bubble me">'
+            conversation += row[3] + '</div>'
+    return conversation
 
 class MainApp(object):
     msg = " "
@@ -102,7 +137,9 @@ class MainApp(object):
     createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER);""")
     # Make profiles db 
     createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
-
+    # Init chat
+    people = initPeople(db)
+    conv = initChat(db)
 
     @cherrypy.expose
     def index(self):
@@ -115,7 +152,7 @@ class MainApp(object):
     @cherrypy.expose
     def home(self):
         try:
-            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation)
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv)
         except KeyError:
             self.msg = "Session expired, please login again"
             raise cherrypy.HTTPRedirect('/')
@@ -182,7 +219,9 @@ class MainApp(object):
         # Getting the error code from the server
         return
           
-    report_thread = Monitor(cherrypy.engine, reportThread, frequency=10)
+    # Thread to report to login server regularly
+    # Will report once every 60 seconds 
+    report_thread = Monitor(cherrypy.engine, reportThread, frequency=60) 
 
 
     def authoriseLogin(self, username, hash_pw):
@@ -217,7 +256,7 @@ class MainApp(object):
             cherrypy.session.clear() # clear user session 
             raise cherrypy.HTTPRedirect('/')
 
-    def getList(self): 
+    def getList(self):
         try: 
             url = 'http://cs302.pythonanywhere.com/getList?username=' + str(cherrypy.session['username']) + '&password=' + str(cherrypy.session['password']) + '&enc=0'
         except: 
@@ -242,13 +281,13 @@ class MainApp(object):
             return ", ".join(usernames)
 
     @cherrypy.expose
-    def ping(sender):
+    def ping(self, sender=None):
         print 'SOMEONE PINGED YOU!!!!!'
         return '0'
 
     @cherrypy.expose 
     def listAPI(self):
-        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp]'
+        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username] [sender] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp]'
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -311,18 +350,24 @@ class MainApp(object):
         cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
-    def viewConversation(self, username):
+    def updateConversation(self, username)
+        conversation = ""
         curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
         for row in curs: 
             if (username == row[1]):
-                self.conversation += '<div style="text-align:left">'
-                self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
-                self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+                # self.conversation += '<div style="text-align:left">'
+                # self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
+                # self.conversation += row[1] + ': ' + row[3] + '<br></div>'
+                conversation += '<div class="bubble you">'
+                conversation += row[3] + '</div>'
             elif (username == row[2]):
-                self.conversation += '<div style="text-align:right">'
-                self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
-                self.conversation += 'You: ' + row[3] + '<br></div>'
-        raise cherrypy.HTTPRedirect('/home')
+                # self.conversation += '<div style="text-align:right">'
+                # self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
+                # self.conversation += 'You: ' + row[3] + '<br></div>'
+                conversation += '<div class="bubble me">'
+                conversation += row[3] + '</div>'
+        print conversation
+        return conversation
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
