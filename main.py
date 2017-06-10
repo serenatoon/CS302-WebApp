@@ -26,7 +26,7 @@ def getIP():
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = '49.224.195.211'
+ext_ip = '122.62.141.222'
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -55,18 +55,24 @@ def createTable(db, create_table_sql):
     except Error as e:
         print(e)
 
-def insertUser(user_details, db, cursor): 
+def insertUser(user_details, db, cursor):
     username = user_details[0]
     location = user_details[1]
     ip = user_details[2]
     port = user_details[3]
     login_time = user_details[4]
+    status = 'Online'
     cursor.execute('''SELECT * FROM user_list WHERE username=?''', (username,))
     if (cursor.fetchone() is None):
         cursor.execute('''INSERT INTO user_list (username, location, ip, port, login_time)
         VALUES (?, ?, ?, ?, ?)''', (username, location, ip, port, login_time))
     else:
-        cursor.execute('''UPDATE user_list SET location=?, ip=?, port=?, login_time=? WHERE username=?''', (location, ip, port, login_time, username,))
+        cursor.execute('''UPDATE user_list SET location=?, ip=?, port=?, login_time=? WHERE username=?''', (location, ip, port, login_time, username))
+    cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, username))
+    db.commit()
+
+def initUsers(db):
+    cursor.execute('''UPDATE user_list SET status="Offline"''')
     db.commit()
 
 def initProfile(user_details, db, cursor):
@@ -88,10 +94,13 @@ def initProfile(user_details, db, cursor):
 
 def initPeople(db):
     people = ""
-    curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
+    curs = db.execute("""SELECT id, username, location, ip, port, login_time, status from user_list""")
     for row in curs: 
         people += '<li class="person" data-chat="' + row[1] + '">'
+        people += '<img src="" alt="" />'
         people += '<span class="name">' + row[1] + '</span>'
+        people += '<span class="time"> </span>'
+        people += '<span class="preview">' + row[6] + '</span>'
     return people
 
 def initChat(db):
@@ -132,7 +141,7 @@ class MainApp(object):
     global cursor 
     cursor = db.cursor()
     # Make user list db 
-    createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT);""")
+    createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT, status TEXT);""")
     # Make messages db 
     createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER);""")
     # Make profiles db 
@@ -140,6 +149,7 @@ class MainApp(object):
     # Init chat
     people = initPeople(db)
     conv = initChat(db)
+    initUsers(db)
 
     @cherrypy.expose
     def index(self):
@@ -281,6 +291,42 @@ class MainApp(object):
             return ", ".join(usernames)
 
     @cherrypy.expose
+    def updateStatus(self, profile_username):
+        cursor.execute('''SELECT * FROM user_list WHERE username=?''', (profile_username,))
+        row = c.fetchone()
+        ip = row[3]
+        port = row[4]
+        url = 'http://' + ip + ':' + port + '/'
+        status = ""
+        try:
+            post_data = {"profile_username": profile_username}
+            #post_data = post_data.encode('utf8')
+            post_data = json.dumps(post_data)
+            getStatus_url = url + 'getStatus?'
+            req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
+            response = urllib2.urlopen(req).read()
+            print response
+            status = response['status']
+        except:
+            try:
+                url += 'ping?sender=' + cherrypy.session['username']
+                response_message = (urllib2.urlopen(url)).read()
+                response = str(response_message)[0]
+                if (response == '0'):
+                    status = 'Online'
+                else:
+                    status = 'Offline'
+            except:
+                status = 'Offline'
+
+        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, profile_username,))
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def getStatus(self):
+        return {"status": "Online"}
+
+    @cherrypy.expose
     def ping(self, sender=None):
         print 'SOMEONE PINGED YOU!!!!!'
         return '0'
@@ -350,7 +396,7 @@ class MainApp(object):
         cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
-    def updateConversation(self, username)
+    def updateConversation(self, username):
         conversation = ""
         curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
         for row in curs: 
@@ -366,7 +412,7 @@ class MainApp(object):
                 # self.conversation += 'You: ' + row[3] + '<br></div>'
                 conversation += '<div class="bubble me">'
                 conversation += row[3] + '</div>'
-        print conversation
+        #print conversation
         return conversation
 
     @cherrypy.expose
