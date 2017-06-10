@@ -36,7 +36,6 @@ $(function() {
         });
     });
 
-// Poll for messages once a second 
 window.setInterval(function(){
   var update_data = {username: personName} ;
         $.post('/updateConversation', update_data, function(conv) {
@@ -45,13 +44,3 @@ window.setInterval(function(){
            });
 }, 1000);
 
-// Poll for user status changes once every 10 seconds 
-window.setInterval(function(){
-  // var update_data = {username: personName} ;
-        $.post('/updateStatuses', function() {
-                //$('.chat.active-chat').html(people); 
-           });
-        $.post('/updatePeople', function(people) {
-                $('.people').html(people); // update the pane 
-           });
-}, 1000);
