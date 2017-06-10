@@ -509,14 +509,13 @@ class MainApp(object):
         return dict(profile_data)
 
     @cherrypy.expose
-    @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def retrieveProfile(self, user=None):
         cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
-        row = c.fetchone()
+        row = cursor.fetchone()
         ip = row[3]
         port = row[4]
-        url = 'http://' + ip + ':' + port + '/'
+        url = 'http://' + str(ip) + ':' +str(port) + '/'
         status = ""
         # try:
         post_data = {"profile_username": user}
@@ -528,13 +527,13 @@ class MainApp(object):
         print 'getStatus: ' + response
         data = json.loads(response)
         print data
-        cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+        cursor.execute('''SELECT * FROM profiles WHERE username=?''', (user,))
         if (cursor.fetchone() is None):
-            cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
-            VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
+            cursor.execute('''INSERT INTO profiles (user, fullname, position, description, location, picture, encoding, encryption, decryption_key)
+            VALUES (?,?,?,?,?,?,?,?,?)''', (user, user, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
         else:
-            cursor.execute('''UPDATE profiles SET fullname=?, position=?, description=?, location=?, picture=? WHERE username=?''', (data['fullname'], data['position'], data['description'], data['location'], data['picture']))
-        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, username))
+            cursor.execute('''UPDATE profiles SET fullname=?, position=?, description=?, location=?, picture=? WHERE username=?''', (data['fullname'], data['position'], data['description'], data['location'], data['picture'], user))
+        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, user))
         db.commit()
 
 
