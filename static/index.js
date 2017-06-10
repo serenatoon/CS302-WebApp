@@ -6,7 +6,7 @@ $('.left .person').mousedown(function(){
         return false;
     } else {
         var findChat = $(this).attr('data-chat');
-        var personName = $(this).find('.name').text();
+        personName = $(this).find('.name').text();
         $('.right .top .name').html(personName);
         $('.chat').removeClass('active-chat');
         $('.left .person').removeClass('active');
@@ -17,3 +17,16 @@ $('.left .person').mousedown(function(){
 });
 
 $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);
+
+$(function() {
+    // When the testform is submitted…
+    $("#sendChat").submit(function() {
+        // post the form values via AJAX…
+        var postdata = {message: $("#message").val(), recipient: personName} ;
+        $.post('/sendMessage', postdata, function(data) {
+            // and set the title with the result
+            // $("#title").html(data['title']) ;
+           });
+        return false ;
+        });
+    });

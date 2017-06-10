@@ -281,7 +281,7 @@ class MainApp(object):
             return ", ".join(usernames)
 
     @cherrypy.expose
-    def ping(self):
+    def ping(self, sender=None):
         print 'SOMEONE PINGED YOU!!!!!'
         return 0
 
@@ -315,7 +315,7 @@ class MainApp(object):
         #print self.chat_error
 
     @cherrypy.expose 
-    def sendMessage(self, recipient, message):
+    def sendMessage(self, recipient, message)
         print recipient
         current_time = time.time()
         curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
