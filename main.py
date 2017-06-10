@@ -293,8 +293,12 @@ class MainApp(object):
                     split_details = user_details[i].split(',')
                     if (split_details[0] != cherrypy.session['username']):
                         usernames.append(split_details[0])
-                        insertUser(split_details, db, cursor)
-                        initProfile(split_details, db, cursor)
+                        try:
+                            insertUser(split_details, db, cursor)
+                            initProfile(split_details, db, cursor)
+                        except:
+                            pass
+            #self.updateStatuses(usernames)
             return usernames
 
     @cherrypy.expose
@@ -362,8 +366,16 @@ class MainApp(object):
 
     @cherrypy.expose
     def updateStatuses(self):
+        try:
+            self.t.stop()
+        except:
+            pass
         for user in self.getList():
-            self.retrieveStatus(user)
+            #self.retrieveStatus(user)
+            time.sleep(5)
+            self.t = threading.Thread(target=self.retrieveStatus, args=[user])
+            self.daemon = True
+            self.t.start()
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
