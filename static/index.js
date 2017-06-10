@@ -45,13 +45,13 @@ window.setInterval(function(){
            });
 }, 1000);
 
-// Poll for user status changes once every 10 seconds 
+//Poll for user status changes once every 2 minutes 
 window.setInterval(function(){
-  // var update_data = {username: personName} ;
+  //var update_data = {username: personName} ;
         $.post('/updateStatuses', function() {
                 //$('.chat.active-chat').html(people); 
            });
         $.post('/updatePeople', function(people) {
                 $('.people').html(people); // update the pane 
            });
-}, 1000);
+}, 120000);
