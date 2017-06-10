@@ -103,6 +103,13 @@ def initPeople(db):
         people += '<span class="preview">' + row[6] + '</span>'
     return people
 
+def getUserList(db):
+    user_list = []
+    curs = db.execute("""SELECT id, username, location, ip, port, login_time, status from user_list""")
+    for row in curs:
+        user_list.append(row[1])
+    return user_list
+
 def initChat(db):
     chat = ""
     curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
@@ -288,43 +295,80 @@ class MainApp(object):
                         usernames.append(split_details[0])
                         insertUser(split_details, db, cursor)
                         initProfile(split_details, db, cursor)
-            return ", ".join(usernames)
+            return usernames
 
     @cherrypy.expose
-    def updateStatus(self, profile_username):
+    def requestStatus(self, profile_username):
         cursor.execute('''SELECT * FROM user_list WHERE username=?''', (profile_username,))
-        row = c.fetchone()
+        row = cursor.fetchone()
+        print row
+        # for row in curs:
         ip = row[3]
         port = row[4]
-        url = 'http://' + ip + ':' + port + '/'
-        status = ""
+        url = 'http://' + str(ip) + ':' + str(port) + '/'
+        post_data = {"profile_username": profile_username}
+        #post_data = post_data.encode('utf8')
+        post_data = json.dumps(post_data)
+        getStatus_url = url + 'getStatus?'
+        print getStatus_url
+        req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
+        response = urllib2.urlopen(req).read()
+        print 'getStatus: ' + response
+        status_data = json.loads(response)
+        print status_data
+        print status_data['status']
+
+    @cherrypy.expose
+    def retrieveStatus(self, profile_username):
+        username = profile_username
+        print 'udpating statuses ' + username
+        cursor.execute('''SELECT * FROM user_list WHERE username=?''', (username,))
+        row = cursor.fetchone()
+        if (row[2] != 2): # TODO: REMOVE THIS 
+            return
+        print row
+        # for row in curs:
+        ip = row[3]
+        port = row[4]
+        url = 'http://' + str(ip) + ':' + str(port) + '/'
+        status = "Invalid"
         try:
-            post_data = {"profile_username": profile_username}
+            post_data = {"profile_username": username}
             #post_data = post_data.encode('utf8')
             post_data = json.dumps(post_data)
             getStatus_url = url + 'getStatus?'
+            print getStatus_url
             req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
             response = urllib2.urlopen(req).read()
-            print response
-            status = response['status']
+            print 'getStatus: ' + response
+            status_data = json.loads(response)
+            status = status_data['status']
+            print status
         except:
             try:
                 url += 'ping?sender=' + cherrypy.session['username']
+                print url
                 response_message = (urllib2.urlopen(url)).read()
-                response = str(response_message)[0]
-                if (response == '0'):
+                print 'ping: ' + response_message
+                if (response_message == '0'):
                     status = 'Online'
                 else:
                     status = 'Offline'
             except:
                 status = 'Offline'
+        print status
+        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, username,))
+        db.commit()
 
-        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, profile_username,))
+    @cherrypy.expose
+    def updateStatuses(self):
+        for user in self.getList():
+            self.retrieveStatus(user)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def getStatus(self):
-        return {"status": "Online"}
+        return {"status": "Away"}
 
     @cherrypy.expose
     def ping(self, sender=None):
@@ -414,6 +458,10 @@ class MainApp(object):
                 conversation += row[3] + '</div>'
         #print conversation
         return conversation
+
+    @cherrypy.expose
+    def updatePeople(self):
+        return initPeople(db)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
