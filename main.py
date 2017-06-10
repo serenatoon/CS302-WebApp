@@ -398,20 +398,16 @@ class MainApp(object):
     @cherrypy.expose
     def updateConversation(self, username):
         conversation = ""
-        curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
+        curs = db.execute("""SELECT id, sender, recipient, message, stamp, mime from messages""")
         for row in curs: 
             if (username == row[1]):
-                # self.conversation += '<div style="text-align:left">'
-                # self.conversation += '[' + datetime.datetime.fromtimestamp(row[4]).strftime('%c') + '] '
-                # self.conversation += row[1] + ': ' + row[3] + '<br></div>'
-                conversation += '<div class="bubble you">'
-                conversation += row[3] + '</div>'
+                if row[5] is None:
+                    conversation += '<div class="bubble you">'
+                    conversation += row[3] + '</div>'
             elif (username == row[2]):
-                # self.conversation += '<div style="text-align:right">'
-                # self.conversation += datetime.datetime.fromtimestamp(row[4]).strftime('%c') + ' '
-                # self.conversation += 'You: ' + row[3] + '<br></div>'
-                conversation += '<div class="bubble me">'
-                conversation += row[3] + '</div>'
+                if row[5] is None:
+                    conversation += '<div class="bubble me">'
+                    conversation += row[3] + '</div>'
         #print conversation
         return conversation
 
@@ -421,8 +417,10 @@ class MainApp(object):
         print 'Someone sent you a file! '
         data = cherrypy.request.json
         sender = data['sender']
+        recipient = data['destination']
         file = data['file']
         filename = data['filename']
+        mime = data['content_type']
         print filename
         stamp = data['stamp']
 
@@ -430,8 +428,8 @@ class MainApp(object):
             fh.write(file.decode('base64'))
 
         try:
-            cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
-            VALUES (?, ?, ?, ?)''', (sender, cherrypy.session['username'], file, stamp))
+            cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp, mime)
+            VALUES (?, ?, ?, ?, ?)''', (sender, recipient, file, stamp, mime))
             db.commit()
         except:
             print 'failed to put file in db!'
