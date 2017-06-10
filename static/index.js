@@ -27,10 +27,11 @@ $(function() {
            });
         var update_data = {username: personName} ;
         $.post('/updateConversation', update_data, function(conv) {
-                $('.chat.active-chat').html(conv);
-                $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);
+                $('.chat.active-chat').html(conv); // add new bubble 
+                $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight); // scroll to bottom
+                $('#message').val(''); // clear input box
            });
-        
+
         return false ;
         });
     });

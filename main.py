@@ -26,7 +26,7 @@ def getIP():
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = '122.62.141.222'
+ext_ip = '49.224.195.211'
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -366,6 +366,7 @@ class MainApp(object):
                 # self.conversation += 'You: ' + row[3] + '<br></div>'
                 conversation += '<div class="bubble me">'
                 conversation += row[3] + '</div>'
+        print conversation
         return conversation
 
     @cherrypy.expose
