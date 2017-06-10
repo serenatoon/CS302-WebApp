@@ -350,7 +350,7 @@ class MainApp(object):
         cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
-    def updateConversation(self, username):
+    def updateConversation(self, username)
         conversation = ""
         curs = db.execute("""SELECT id, sender, recipient, message, stamp from messages""")
         for row in curs: 
