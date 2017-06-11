@@ -121,7 +121,7 @@ h1 {
 ul.people {
     overflow-y: auto;
     overflow-x: hidden;
-    height: 70%;
+    height: 598px;
 }
 .container .left .people .person {
   position: relative;
