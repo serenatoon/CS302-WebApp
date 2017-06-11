@@ -336,7 +336,7 @@ class MainApp(object):
 
     @cherrypy.expose 
     def listAPI(self):
-        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /getProfile [profile_username] [sender] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp]'
+        return '/ping [sender] /listAPI /receiveMessage [sender] [destination] [message] [stamp] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp] /getProfile [profile_username] [sender] /receiveFile [sender] [destination] [file] [filename] [content_type] [stamp] /getStatus [profile_username]'
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
