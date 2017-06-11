@@ -52,6 +52,7 @@ window.setInterval(function(){
 
 
 $('.right .top .name').mousedown(function(){
+    $('.profile').html(' ');
     var post_data = {user: personName} ;
     $.post('/viewProfile', post_data, function(profile) {
             $('.profile').html(profile);

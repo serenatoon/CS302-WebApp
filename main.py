@@ -27,7 +27,7 @@ def getIP():
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = getIP()
+ext_ip = '49.224.211.201'
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -297,7 +297,7 @@ class MainApp(object):
     @cherrypy.expose
     def updateStatus(self, profile_username):
         cursor.execute('''SELECT * FROM user_list WHERE username=?''', (profile_username,))
-        row = c.fetchone()
+        row = cursor.fetchone()
         ip = row[3]
         port = row[4]
         url = 'http://' + ip + ':' + port + '/'
@@ -389,10 +389,12 @@ class MainApp(object):
                     cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
                     VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
                     db.commit()
+                    return
                 else:
-                    error = 'Message failed to send!'
+                    error = 'Your message could not be delivered!'
                     print error 
                     self.chat = error
+                    return error
 
                 break
                 # else:
@@ -551,7 +553,10 @@ class MainApp(object):
             else:
                 username = user
                 try:
-                    self.retrieveProfile(user=username)
+                    cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
+                    row = cursor.fetchone()
+                    if (row[6] != 'Offline'):
+                        self.retrieveProfile(user=username)
                 except:
                     print 'could not retrieve profile!'
 
