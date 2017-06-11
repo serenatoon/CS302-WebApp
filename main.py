@@ -22,11 +22,12 @@ def getIP():
         ip = socket.gethostbyname(socket.getfqdn())  # return fully-qualified domain name
     except:
         ip = socket.gethostbyname(socket.gethostname()) 
+    print ip
     return ip
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = '122.62.141.222'
+ext_ip = getIP()
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -144,7 +145,7 @@ class MainApp(object):
     # Make user list db 
     createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT, status TEXT);""")
     # Make messages db 
-    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER);""")
+    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER, mime TEXT);""")
     # Make profiles db 
     createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
     # Init chat
@@ -521,15 +522,15 @@ class MainApp(object):
             ip = row[3]
             port = row[4]
             url = 'http://' + str(ip) + ':' +str(port) + '/'
-            status = ""
             # try:
-            post_data = {"profile_username": user}
+            post_data = {"profile_username": user, "sender": cherrypy.session['username']}
             #post_data = post_data.encode('utf8')
             post_data = json.dumps(post_data)
-            getStatus_url = url + 'getProfile?'
-            req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
+            getProfile_url = url + 'getProfile?'
+            print getProfile_url
+            req = urllib2.Request(getProfile_url, post_data, {'Content-Type': 'application/json'})
             response = urllib2.urlopen(req).read()
-            print 'getStatus: ' + response
+            print 'getProfile: ' + response
             data = json.loads(response)
             print data
             try:
@@ -550,11 +551,9 @@ class MainApp(object):
             else:
                 username = user
                 try:
-                    self.retrieveProfile(username)
+                    self.retrieveProfile(user=username)
                 except:
                     print 'could not retrieve profile!'
-
-            
 
             cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
             row = cursor.fetchone()
