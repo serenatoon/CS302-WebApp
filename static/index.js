@@ -7,13 +7,18 @@ $('.left .person').mousedown(function(){
     } else {
         var findChat = $(this).attr('data-chat');
         personName = $(this).find('.name').text();
-        $('.right .top .name').html(personName+' (view profile)');
+        $('.right .top .name').html(personName);
         $('.chat').removeClass('active-chat');
         $('.left .person').removeClass('active');
         $(this).addClass('active');
         $('.chat[data-chat = '+findChat+']').addClass('active-chat');
         $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight);
         $('.right .write .replace').html('<input type="hidden" value="'+personName+'"name="recipient"/></div>')
+            $('.profile').html(' ');
+    var post_data = {user: personName} ;
+    $.post('/viewProfile', post_data, function(profile) {
+            $('.profile').html(profile);
+       });
         var update_data = {username: personName} ;
         $.post('/updateConversation', update_data, function(conv) {
                 $('.chat.active-chat').html(conv); // add new bubble 
@@ -52,11 +57,11 @@ window.setInterval(function(){
 }, 10000);
 
 
-$('.right .top .name').mousedown(function(){
-    $('.profile').html(' ');
-    var post_data = {user: personName} ;
-    $.post('/viewProfile', post_data, function(profile) {
-            $('.profile').html(profile);
-       });
-});
+// $('.right .top .name').mousedown(function(){
+//     $('.profile').html(' ');
+//     var post_data = {user: personName} ;
+//     $.post('/viewProfile', post_data, function(profile) {
+//             $('.profile').html(profile);
+//        });
+// });
 
