@@ -27,7 +27,7 @@ def getIP():
     return ip
 
 
-ext_ip = '122.62.141.222'
+ext_ip = getIP()
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
 db_file = 'app.db'
@@ -199,7 +199,7 @@ class MainApp(object):
         # Report to login server
         try:
             url = 'http://cs302.pythonanywhere.com/report?username=' + str(username)
-            url += '&password=' + str(hash_pw)  + '&location=' + '2' + '&ip=' + ext_ip
+            url += '&password=' + str(hash_pw)  + '&location=' + '0' + '&ip=' + ext_ip
             url += '&port=' + str(port) + '&enc=0'
             print "logged in as " + username
         except:
