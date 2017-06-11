@@ -80,9 +80,11 @@ you bling bitch</span>
                 <input type="text" id="message" placeholder="Type a message..." autocomplete="off"/>
 <!--                 <a href="javascript:;" class="write-link send"></a> -->
                 <input type="submit" value=">" class="write-link send" style="width:1px;">
+                </form>
 
                 <form id="sendFile" accept-charset="utf-8" action="/sendFile" method="post" enctype="multipart/form-data">
-                <input type="file" id="send_file">
+                <input type="file" id="send_file" name="send_file">
+                <div class="replace"><input id="replace" type="hidden" value="None" name="recipient"/></div>
                 <input type="submit" value="Send File"/>
                 </form>
             </div>
