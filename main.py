@@ -89,7 +89,7 @@ def initProfile(user_details, db, cursor):
         else: 
             location_str = '???'
         cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
-        VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
+        VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'http://i.imgur.com/gRTdtu0.png', 0, 0, 'no key'))
         db.commit()
 
 def initPeople(db):
