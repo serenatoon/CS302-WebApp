@@ -489,7 +489,8 @@ class MainApp(object):
 
         cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp, mime)
         VALUES (?, ?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp, str(send_file.content_type)))
-        db.commit()        
+        db.commit()
+        raise cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
