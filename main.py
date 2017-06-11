@@ -368,6 +368,9 @@ class MainApp(object):
                         conversation += row[3] + '">'
                         conversation += '<source type=' + row[5] + 'src="' + row[5]
                         conversation += ';base64,' + row[3] + '"></video></div>'
+                    elif 'application' in row[5]:
+                        conversation += 'Sent you a file!</div>'
+
                 elif (username == row[2]): # sender
                     conversation += '<div class="bubble me">'
                     if row[5] is None:
@@ -383,6 +386,8 @@ class MainApp(object):
                         conversation += row[3] + '">'
                         conversation += '<source type=' + row[5] + 'src="' + row[5]
                         conversation += ';base64,' + row[3] + '"></video></div>'
+                    elif 'application' in row[5]:
+                        conversation += 'Sent you a file!</div>'
         return conversation
 
     @cherrypy.expose
