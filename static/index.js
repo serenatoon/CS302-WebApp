@@ -30,6 +30,7 @@ $(function() {
         // Post values (message, recipient) via AJAX
         var post_data = {message: $("#message").val(), recipient: personName} ;
         $.post('/sendMessage', post_data, function(data) {
+                $('.receipt').html(data);           
            });
         var update_data = {username: personName} ;
         $.post('/updateConversation', update_data, function(conv) {
@@ -57,6 +58,5 @@ $('.right .top .name').mousedown(function(){
     $.post('/viewProfile', post_data, function(profile) {
             $('.profile').html(profile);
        });
-    
 });
 

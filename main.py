@@ -368,20 +368,25 @@ class MainApp(object):
     def sendMessage(self, recipient, message):
         print recipient
         current_time = time.time()
-        curs = db.execute("""SELECT id, username, location, ip, port, login_time from user_list""")
+        curs = db.execute("""SELECT id, username, location, ip, port, login_time, status from user_list""")
         for row in curs: 
             if (recipient == row[1]):
                 recipient_ip = row[3]
                 recipient_port = row[4]
+                if (row[6] != 'Online'):
+                    return 'Your message could not be delivered!'
 
                 post_data = {"sender": cherrypy.session['username'], "destination": recipient, "message": message, "stamp": int(current_time)}
                 #post_data = post_data.encode('utf8')
                 post_data = json.dumps(post_data)
                 url = 'http://' + str(recipient_ip) + ":" + str(recipient_port) + '/receiveMessage?'
                 print url
-                req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
+                try:
+                    req = urllib2.Request(url, post_data, {'Content-Type': 'application/json'})
 
-                response = urllib2.urlopen(req).read()
+                    response = urllib2.urlopen(req).read()
+                except: 
+                    return 'Your message could not be delivered!'
                 print response
                 # print str(response)
                 if (str(response[0]) == '0'):
@@ -389,17 +394,18 @@ class MainApp(object):
                     cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
                     VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
                     db.commit()
-                    return
+                    return 'Your message has been sent!'
                 else:
                     error = 'Your message could not be delivered!'
                     print error 
                     self.chat = error
                     return error
-
                 break
                 # else:
                 #     print 'could not send message!'
         cherrypy.HTTPRedirect('/home')
+
+
 
     @cherrypy.expose
     def updateConversation(self, username):
@@ -541,7 +547,7 @@ class MainApp(object):
             except:
                 print 'user does not exist in db!'
         except:
-            print 'user does not exist!'
+            print 'user dboes not exist!'
         db.commit()
 
 
