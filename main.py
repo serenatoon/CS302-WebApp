@@ -622,6 +622,8 @@ class MainApp(object):
             cursor.execute('''UPDATE profiles SET description=? WHERE username=?''', (changes, username,))
         elif (parameter == 'location'):
             cursor.execute('''UPDATE profiles SET location=? WHERE username=?''', (changes, username,))
+        elif (parameter == 'picture'):
+            cursor.execute('''UPDATE profiles SET location=? WHERE username=?''', (changes, username,))
         else:
             print "invalid parameter!"
 
