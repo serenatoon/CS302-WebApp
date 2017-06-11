@@ -57,8 +57,8 @@ window.setInterval(function(){
 }, 10000);
 
 
-window.setInterval(function(){
-        $.post('/updatePeople', function(people) {
-               $('.people').html(people); // update the pane 
-           });
-}, 10000);
+// window.setInterval(function(){
+//         $.post('/updatePeople', function(people) {
+//                $('.people').html(people); // update the pane 
+//            });
+// }, 15000);
