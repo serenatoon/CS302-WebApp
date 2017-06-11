@@ -57,11 +57,8 @@ window.setInterval(function(){
 }, 10000);
 
 
-// $('.right .top .name').mousedown(function(){
-//     $('.profile').html(' ');
-//     var post_data = {user: personName} ;
-//     $.post('/viewProfile', post_data, function(profile) {
-//             $('.profile').html(profile);
-//        });
-// });
-
+window.setInterval(function(){
+        $.post('/updatePeople', function(people) {
+               $('.people').html(people); // update the pane 
+           });
+}, 10000);

@@ -295,6 +295,10 @@ class MainApp(object):
             return ", ".join(usernames)
 
     @cherrypy.expose
+    def updatePeople(self):
+        return initPeople(db)
+
+    @cherrypy.expose
     def updateStatus(self, profile_username):
         cursor.execute('''SELECT * FROM user_list WHERE username=?''', (profile_username,))
         row = cursor.fetchone()
