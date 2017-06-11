@@ -163,6 +163,7 @@ class MainApp(object):
     @cherrypy.expose
     def home(self):
         try:
+            self.getList()
             page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv, profile_html=self.profile_html)
         except KeyError:
             self.msg = "Session expired, please login again"
