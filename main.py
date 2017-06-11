@@ -22,11 +22,12 @@ def getIP():
         ip = socket.gethostbyname(socket.getfqdn())  # return fully-qualified domain name
     except:
         ip = socket.gethostbyname(socket.gethostname()) 
+    print ip
     return ip
 
 
 local_ip = getIP() # socket to listen  
-ext_ip = '122.62.141.222'
+ext_ip = '49.224.211.201'
 #ip = "127.0.0.1"
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
@@ -144,7 +145,7 @@ class MainApp(object):
     # Make user list db 
     createTable(db, """CREATE TABLE IF NOT EXISTS user_list ( id INTEGER PRIMARY KEY, username TEXT, location INTEGER, ip TEXT, port INTEGER, login_time TEXT, status TEXT);""")
     # Make messages db 
-    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER);""")
+    createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER, mime TEXT);""")
     # Make profiles db 
     createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
     # Init chat
@@ -296,7 +297,7 @@ class MainApp(object):
     @cherrypy.expose
     def updateStatus(self, profile_username):
         cursor.execute('''SELECT * FROM user_list WHERE username=?''', (profile_username,))
-        row = c.fetchone()
+        row = cursor.fetchone()
         ip = row[3]
         port = row[4]
         url = 'http://' + ip + ':' + port + '/'
@@ -388,10 +389,12 @@ class MainApp(object):
                     cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
                     VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, message, current_time))
                     db.commit()
+                    return
                 else:
-                    error = 'Message failed to send!'
+                    error = 'Your message could not be delivered!'
                     print error 
                     self.chat = error
+                    return error
 
                 break
                 # else:
@@ -515,29 +518,30 @@ class MainApp(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def retrieveProfile(self, user=None):
-        cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
-        row = cursor.fetchone()
-        ip = row[3]
-        port = row[4]
-        url = 'http://' + str(ip) + ':' +str(port) + '/'
-        status = ""
-        # try:
-        post_data = {"profile_username": user}
-        #post_data = post_data.encode('utf8')
-        post_data = json.dumps(post_data)
-        getStatus_url = url + 'getProfile?'
-        req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
-        response = urllib2.urlopen(req).read()
-        print 'getStatus: ' + response
-        data = json.loads(response)
-        print data
-        cursor.execute('''SELECT * FROM profiles WHERE username=?''', (user,))
-        if (cursor.fetchone() is None):
-            cursor.execute('''INSERT INTO profiles (user, fullname, position, description, location, picture, encoding, encryption, decryption_key)
-            VALUES (?,?,?,?,?,?,?,?,?)''', (user, user, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
-        else:
-            cursor.execute('''UPDATE profiles SET fullname=?, position=?, description=?, location=?, picture=? WHERE username=?''', (data['fullname'], data['position'], data['description'], data['location'], data['picture'], user))
-        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, user))
+        try:
+            cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
+            row = cursor.fetchone()
+            ip = row[3]
+            port = row[4]
+            url = 'http://' + str(ip) + ':' +str(port) + '/'
+            # try:
+            post_data = {"profile_username": user, "sender": cherrypy.session['username']}
+            #post_data = post_data.encode('utf8')
+            post_data = json.dumps(post_data)
+            getProfile_url = url + 'getProfile?'
+            print getProfile_url
+            req = urllib2.Request(getProfile_url, post_data, {'Content-Type': 'application/json'})
+            response = urllib2.urlopen(req).read()
+            print 'getProfile: ' + response
+            data = json.loads(response)
+            print data
+            try:
+                cursor.execute('''SELECT * FROM profiles WHERE username=?''', (user,))
+                cursor.execute('''UPDATE profiles SET fullname=?, position=?, description=?, location=?, picture=? WHERE username=?''', (data['fullname'], data['position'], data['description'], data['location'], data['picture'], user))
+            except:
+                print 'user does not exist in db!'
+        except:
+            print 'user does not exist!'
         db.commit()
 
 
@@ -548,6 +552,13 @@ class MainApp(object):
                 username = cherrypy.session['username']
             else:
                 username = user
+                try:
+                    cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
+                    row = cursor.fetchone()
+                    if (row[6] != 'Offline'):
+                        self.retrieveProfile(user=username)
+                except:
+                    print 'could not retrieve profile!'
 
             cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
             row = cursor.fetchone()
