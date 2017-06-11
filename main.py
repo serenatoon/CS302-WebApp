@@ -563,6 +563,29 @@ class MainApp(object):
             raise cherrypy.HTTPRedirect('/')
 
     @cherrypy.expose
+    def myProfile(self, user=None):
+        try:
+            if user is None:
+                username = cherrypy.session['username']
+            else:
+                username = user
+
+            cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+            row = cursor.fetchone()
+            print row
+            profile_data = '<img src="' + row[6] + '">' + '<br><br>'
+            profile_data += 'Username: ' + row[1] + '<br>'
+            profile_data += 'Full name: ' + row[2] + '<br>'
+            profile_data += 'Position: ' + row[3] + '<br>'
+            profile_data += 'Description: ' + row[4] + '<br>'
+            profile_data += 'Location: ' + row[5] + '<br>'
+            page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
+            return page
+        except:
+            self.msg = 'Session expired, please login again'
+            raise cherrypy.HTTPRedirect('/')
+
+    @cherrypy.expose
     def editProfile(self, parameter, changes, user=None):
         print parameter
         print changes
