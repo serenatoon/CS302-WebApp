@@ -301,16 +301,19 @@ ul.people {
   background-repeat: no-repeat;
   background-position: center;
 }
+.container .right. .write .write-link .send {
+  width: 1px;
+}
 .container .right .write .write-link.send:before {
   display: inline-block;
   float: left;
-  width: 20px;
-  height: 42px;
-  margin-left: 11px;
+  width: 5px;
+  height: 5px;
+  margin-left: 5px;
   content: '';
-  background-image: url("https://s30.postimg.org/nz9dho0pp/send.png");
+  /*background-image: url("https://s30.postimg.org/nz9dho0pp/send.png");
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: center;*/
 }
 .container .right .bubble {
   font-size: 13px;
@@ -524,4 +527,11 @@ img {
 video {
   width: auto;
   max-height: 300px;
+}
+.profile {
+  width: 100%;
+}
+.profile img {
+  max-height: 50px;
+  width: auto;
 }

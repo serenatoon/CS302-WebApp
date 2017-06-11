@@ -135,6 +135,7 @@ class MainApp(object):
     chat_error = ""
     chat = ""
     conversation = ""
+    profile_html = ""
 
     global db
     db = connectDatabse(db_file)
@@ -147,9 +148,9 @@ class MainApp(object):
     # Make profiles db 
     createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
     # Init chat
+    initUsers(db)
     people = initPeople(db)
     conv = initChat(db)
-    initUsers(db)
 
     @cherrypy.expose
     def index(self):
@@ -162,7 +163,9 @@ class MainApp(object):
     @cherrypy.expose
     def home(self):
         try:
-            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv)
+            self.getList()
+            self.people = initPeople(db)
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv, profile_html=self.profile_html)
         except KeyError:
             self.msg = "Session expired, please login again"
             raise cherrypy.HTTPRedirect('/')
@@ -484,9 +487,10 @@ class MainApp(object):
                 print response
                 break
 
-        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
-        VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp))
-        db.commit()        
+        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp, mime)
+        VALUES (?, ?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp, str(send_file.content_type)))
+        db.commit()
+        raise cherrypy.HTTPRedirect('/home')
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -509,6 +513,35 @@ class MainApp(object):
         return dict(profile_data)
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def retrieveProfile(self, user=None):
+        cursor.execute('''SELECT * FROM user_list WHERE username=?''', (user,))
+        row = cursor.fetchone()
+        ip = row[3]
+        port = row[4]
+        url = 'http://' + str(ip) + ':' +str(port) + '/'
+        status = ""
+        # try:
+        post_data = {"profile_username": user}
+        #post_data = post_data.encode('utf8')
+        post_data = json.dumps(post_data)
+        getStatus_url = url + 'getProfile?'
+        req = urllib2.Request(getStatus_url, post_data, {'Content-Type': 'application/json'})
+        response = urllib2.urlopen(req).read()
+        print 'getStatus: ' + response
+        data = json.loads(response)
+        print data
+        cursor.execute('''SELECT * FROM profiles WHERE username=?''', (user,))
+        if (cursor.fetchone() is None):
+            cursor.execute('''INSERT INTO profiles (user, fullname, position, description, location, picture, encoding, encryption, decryption_key)
+            VALUES (?,?,?,?,?,?,?,?,?)''', (user, user, 'student', 'this is my description', location_str, 'picture', 0, 0, 'no key'))
+        else:
+            cursor.execute('''UPDATE profiles SET fullname=?, position=?, description=?, location=?, picture=? WHERE username=?''', (data['fullname'], data['position'], data['description'], data['location'], data['picture'], user))
+        cursor.execute('''UPDATE user_list SET status=? WHERE username=?''', (status, user))
+        db.commit()
+
+
+    @cherrypy.expose
     def viewProfile(self, user=None):
         try:
             if user is None:
@@ -516,7 +549,39 @@ class MainApp(object):
             else:
                 username = user
 
-            profile_data = self.getProfile(user=username)
+            cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+            row = cursor.fetchone()
+            print row
+            profile_html = '<img src="' + row[6] + '">' + '<br><br>'
+            profile_html += 'Username: ' + row[1] + '<br>'
+            profile_html += 'Full name: ' + row[2] + '<br>'
+            profile_html += 'Position: ' + row[3] + '<br>'
+            profile_html += 'Description: ' + row[4] + '<br>'
+            profile_html += 'Location: ' + row[5] + '<br>'
+            # page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
+            print profile_html
+            return profile_html
+        except:
+            self.msg = 'Session expired, please login again'
+            raise cherrypy.HTTPRedirect('/')
+
+    @cherrypy.expose
+    def myProfile(self, user=None):
+        try:
+            if user is None:
+                username = cherrypy.session['username']
+            else:
+                username = user
+
+            cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
+            row = cursor.fetchone()
+            print row
+            profile_data = '<img src="' + row[6] + '">' + '<br><br>'
+            profile_data += 'Username: ' + row[1] + '<br>'
+            profile_data += 'Full name: ' + row[2] + '<br>'
+            profile_data += 'Position: ' + row[3] + '<br>'
+            profile_data += 'Description: ' + row[4] + '<br>'
+            profile_data += 'Location: ' + row[5] + '<br>'
             page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
             return page
         except:
