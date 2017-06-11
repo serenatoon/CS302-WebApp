@@ -49,7 +49,7 @@ h1 {
 }
 
 .container {
-  position: relative;
+  position: absolute;
   font-family:'Open Sans', sans-serif;
   top: 50%;
   left: 40%;
@@ -571,4 +571,5 @@ video {
 .receipt {
   letter-spacing: 2px;
   font-weight: 600;
+  padding-top: 40px;
 }
