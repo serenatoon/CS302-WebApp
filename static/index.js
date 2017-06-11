@@ -57,3 +57,21 @@ $('.right .top .name').mousedown(function(){
        });
     
 });
+
+$(function() {
+    // When file is submitted 
+    $("#sendFile").submit(function() {
+        // Post values (message, recipient) via AJAX
+        var post_data = {send_file: $("#send_file").val(), recipient: personName} ;
+        $.post('/sendFile', post_data, function(data) {
+           });
+        var update_data = {username: personName} ;
+        $.post('/updateConversation', update_data, function(conv) {
+                $('.chat.active-chat').html(conv); // add new bubble 
+                $('.chat.active-chat').scrollTop($('.chat.active-chat')[0].scrollHeight); // scroll to bottom
+                $('#send_file').val(''); // clear input box
+           });
+
+        return false ;
+        });
+    });
