@@ -148,9 +148,9 @@ class MainApp(object):
     # Make profiles db 
     createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
     # Init chat
+    initUsers(db)
     people = initPeople(db)
     conv = initChat(db)
-    initUsers(db)
 
     @cherrypy.expose
     def index(self):
@@ -164,6 +164,7 @@ class MainApp(object):
     def home(self):
         try:
             self.getList()
+            self.people = initPeople(db)
             page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv, profile_html=self.profile_html)
         except KeyError:
             self.msg = "Session expired, please login again"
