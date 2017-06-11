@@ -89,8 +89,8 @@ def initProfile(user_details, db, cursor):
             location_str = 'Outside world'
         else: 
             location_str = '???'
-        cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture, encoding, encryption, decryption_key)
-        VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'http://i.imgur.com/gRTdtu0.png', 0, 0, 'no key'))
+        cursor.execute('''INSERT INTO profiles (username, fullname, position, description, location, picture)
+        VALUES (?,?,?,?,?,?,?,?,?)''', (username, username, 'student', 'this is my description', location_str, 'http://i.imgur.com/gRTdtu0.png'))
         db.commit()
 
 def initPeople(db):
@@ -147,7 +147,7 @@ class MainApp(object):
     # Make messages db 
     createTable(db, """CREATE TABLE IF NOT EXISTS messages ( id INTEGER PRIMARY KEY, sender TEXT, recipient TEXT, message TEXT, stamp INTEGER, mime TEXT);""")
     # Make profiles db 
-    createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT, encoding INTEGER, encryption INTEGER, decryption_key TEXT);""")
+    createTable(db, """CREATE TABLE IF NOT EXISTS profiles ( id INTEGER PRIMARY KEY, username TEXT, fullname TEXT, position TEXT, description TEXT, location TEXT, picture TEXT);""")
     # Init chat
     initUsers(db)
     people = initPeople(db)
