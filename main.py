@@ -609,7 +609,7 @@ class MainApp(object):
             print "invalid parameter!"
 
         db.commit()
-        raise cherrypy.HTTPRedirect('/viewProfile')
+        raise cherrypy.HTTPRedirect('/myProfile')
 
 
     #webbrowser.open_new('http://%s:%d/login' % (local_ip, port))
