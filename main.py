@@ -27,8 +27,7 @@ def getIP():
     return ip
 
 
-ext_ip = '122.62.141.222'
-#ip = "127.0.0.1"
+ext_ip = getIP()
 port = 10008  # TCP port to listen 
 salt = "COMPSYS302-2017"
 db_file = 'app.db'
@@ -579,7 +578,7 @@ class MainApp(object):
         db.commit()
         raise cherrypy.HTTPRedirect('/myProfile')
 
-    webbrowser.open_new('http://%s:%d/login' % (ext_ip, port))
+    webbrowser.open_new('http://%s:%d/' % (ext_ip, port))
 
 def runMainApp():
     conf = {
