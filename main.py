@@ -135,6 +135,7 @@ class MainApp(object):
     chat_error = ""
     chat = ""
     conversation = ""
+    profile_html = ""
 
     global db
     db = connectDatabse(db_file)
@@ -162,7 +163,7 @@ class MainApp(object):
     @cherrypy.expose
     def home(self):
         try:
-            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], user_list=self.getList(), chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv)
+            page = open('loggedin.html', 'r').read().format(username=cherrypy.session['username'], chat_error=self.chat_error, chat_messages=self.chat, conversation=self.conversation, people=self.people, chat=self.conv, profile_html=self.profile_html)
         except KeyError:
             self.msg = "Session expired, please login again"
             raise cherrypy.HTTPRedirect('/')
@@ -548,14 +549,15 @@ class MainApp(object):
             cursor.execute('''SELECT * FROM profiles WHERE username=?''', (username,))
             row = cursor.fetchone()
             print row
-            profile_data = '<img src="' + row[6] + '">' + '<br><br>'
-            profile_data += 'Username: ' + row[1] + '<br>'
-            profile_data += 'Full name: ' + row[2] + '<br>'
-            profile_data += 'Position: ' + row[3] + '<br>'
-            profile_data += 'Description: ' + row[4] + '<br>'
-            profile_data += 'Location: ' + row[5] + '<br>'
-            page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
-            return page
+            profile_html = '<img src="' + row[6] + '">' + '<br><br>'
+            profile_html += 'Username: ' + row[1] + '<br>'
+            profile_html += 'Full name: ' + row[2] + '<br>'
+            profile_html += 'Position: ' + row[3] + '<br>'
+            profile_html += 'Description: ' + row[4] + '<br>'
+            profile_html += 'Location: ' + row[5] + '<br>'
+            # page = open('profile.html', 'r').read().format(profile_data=str(profile_data))
+            print profile_html
+            return profile_html
         except:
             self.msg = 'Session expired, please login again'
             raise cherrypy.HTTPRedirect('/')

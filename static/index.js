@@ -7,7 +7,7 @@ $('.left .person').mousedown(function(){
     } else {
         var findChat = $(this).attr('data-chat');
         personName = $(this).find('.name').text();
-        $('.right .top .name').html(personName);
+        $('.right .top .name').html(personName+' (view profile)');
         $('.chat').removeClass('active-chat');
         $('.left .person').removeClass('active');
         $(this).addClass('active');
@@ -49,3 +49,11 @@ window.setInterval(function(){
            });
 }, 10000);
 
+
+$('.right .top .name').mousedown(function(){
+    var post_data = {user: personName} ;
+    $.post('/viewProfile', post_data, function(profile) {
+            $('.profile').html(profile);
+       });
+    
+});
