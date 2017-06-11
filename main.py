@@ -487,8 +487,8 @@ class MainApp(object):
                 print response
                 break
 
-        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp)
-        VALUES (?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp))
+        cursor.execute('''INSERT INTO messages (sender, recipient, message, stamp, mime)
+        VALUES (?, ?, ?, ?, ?)''', (cherrypy.session['username'], recipient, enc_file, stamp, str(send_file.content_type)))
         db.commit()        
 
     @cherrypy.expose
